@@ -1,0 +1,188 @@
+# PassBit — Zero-Knowledge Entropy & Breach Detector
+
+**Version:** 1.0.0  
+**Author:** Firas — Cybersecurity Student & Web Security Researcher  
+**Platform:** Google Chrome Extension, Manifest V3  
+**Document status:** Production-oriented implementation specification
+
+## Scope and design intent
+
+PassBit is a privacy-first browser extension that estimates password strength locally and checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
+
+The security boundary is explicit. Entropy is a mathematical estimate based on an assumed character pool; it is not a proof that a password is random. The breach result is a corpus lookup; a clean response does not prove that a password has never been exposed elsewhere. The UI uses this language so that users are not given false certainty.
+
+## Section 1: Project Identity & Branding Concept
+
+### 1.1 Product identity
+
+PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.0.0**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
+
+The core value proposition is a zero-cost, privacy-first Chrome Extension that provides an immediate password-strength estimate and breach exposure signal directly inside the browser. The extension does not require an account, does not store passwords, and does not add analytics or telemetry. The only outbound request is the privacy-preserving range request needed for the optional breach check.
+
+### 1.2 Brand direction
+
+The visual language is **Cyberpunk Glassmorphism** in dark mode. The product uses translucent panels, restrained blur, thin technical borders, neon accents, and a grid texture that evokes a security operations console without sacrificing legibility. High-risk states use signal red, caution uses warning yellow, verified positive states use cyber green, interactive and informational accents use neon cyan, and secondary system accents use electric purple.
+
+| Brand token | Visual role | Intended meaning |
+| --- | --- | --- |
+| Deep Cyber Gray | Page background | Quiet, low-glare workspace for sensitive input. |
+| Neon Cyan | Focus, local analysis, verified transport | Active analysis and privacy boundary. |
+| Electric Purple | Identity, secondary metric, product signature | PassBit brand accent and technical depth. |
+| Signal Red | Breach or weak-password warning | Immediate action is required. |
+| Warning Yellow | Moderate estimate | Caution and improvement opportunity. |
+| Cyber Green | Strong estimate or clean query result | Positive signal, not a guarantee. |
+
+The logo concept is a minimalist cyber shield fused with a digital “Bit” keyhole. The shield represents active data defense; the keyhole represents credential access control; the geometric “PB” mark provides a compact toolbar identity. The supplied PNG icons use a dark shield, cyan edge, purple inner line, and a small PB monogram.
+
+### 1.3 Product principles
+
+PassBit follows five product principles. First, the password remains in memory only for the shortest practical time and is never persisted by the extension. Second, the privacy model is visible to the user rather than hidden in a legal footnote. Third, every remote result is treated as a signal with limitations. Fourth, the interface must be useful while a user is completing a form, not only after a form is submitted. Fifth, all executable JavaScript is packaged locally, consistent with Manifest V3's extension security model.[2]
+
+## Section 2: Mathematical Algorithms & Security Models
+
+### 2.1 Shannon-style entropy estimate
+
+PassBit uses the standard character-pool estimate `E = L × log2(R)`, where `E` is estimated entropy in bits, `L` is password length measured as Unicode code points, and `R` is the estimated size of the active character pool. The formula assumes each character is independently selected with uniform probability from the active pool. Human-created passwords rarely meet those assumptions, so PassBit labels the value **estimated entropy**.
+
+The implementation evaluates four character groups. Lowercase Latin letters contribute 26 possible characters when at least one lowercase letter is present. Uppercase Latin letters contribute 26 when present. Decimal digits contribute 10 when present. Symbols and punctuation contribute an operational estimate of 33 when at least one non-alphanumeric character is present. The active pool is the sum of the groups detected in the password, not the number of distinct characters the user happened to type.
+
+| Detection | Pool contribution | Example trigger |
+| --- | ---: | --- |
+| Lowercase Latin | 26 | `a` through `z` |
+| Uppercase Latin | 26 | `A` through `Z` |
+| Decimal digits | 10 | `0` through `9` |
+| Symbols or punctuation | 33 | Any non-ASCII-alphanumeric character |
+
+For example, a password containing lowercase letters and digits has `R = 36`. A 12-character value in that estimated pool has `E = 12 × log2(36)`, or approximately 62.0 bits. A password containing all four groups has `R = 95`, producing approximately 78.8 bits at 12 characters under the same idealized assumption.
+
+The displayed bands are intentionally conservative product guidance rather than a universal cryptographic standard. Values below 40 bits are labelled **Weak**, values from 40 through 65 bits are labelled **Moderate**, and values above 65 bits are labelled **Strong**. A strong band still requires uniqueness, resistance to personal-information guessing, safe storage, and multi-factor authentication.
+
+### 2.2 Local heuristics
+
+Entropy alone cannot detect the fact that a user typed a common password, a repeated character, a keyboard walk, or a predictable sequence. PassBit therefore adds lightweight local heuristics. The current implementation flags a small built-in set of common passwords, repeated-character values, and a few obvious sequence prefixes. These heuristics never leave the browser and are supplementary; they do not replace a password manager's generator or a proper password-strength estimator trained on password datasets.
+
+The engine counts Unicode code points for length so that a non-ASCII symbol is not accidentally counted as two JavaScript UTF-16 code units. Character-pool classification remains intentionally narrow and transparent: Latin case, decimal digits, and a broad “symbol” fallback. This makes the estimate auditable but means that the result should be interpreted carefully for non-Latin scripts.
+
+### 2.3 K-Anonymity zero-knowledge privacy model
+
+PassBit's breach check is a client-side K-Anonymity workflow. The password itself is not sent to the network. The current Pwned Passwords range API accepts a partial SHA-1 hash and returns the matching suffix records; the client performs the final comparison locally.[1]
+
+| Step | Local operation | Network-visible data |
+| --- | --- | --- |
+| A. Local hashing | Convert the password to UTF-8 and calculate SHA-1 with `crypto.subtle.digest`. | Nothing yet. |
+| B. Hash splitting | Uppercase the 40-character hexadecimal digest and split it into a 5-character prefix plus a 35-character suffix. | Nothing yet. |
+| C. Privacy query | Request the range endpoint using only the 5-character prefix. | The prefix, request metadata, and ordinary network information. |
+| D. Local matching | Parse returned suffix/count lines in memory and compare the exact 35-character suffix. | The full suffix is not sent. |
+| E. Disposal | Keep only the result needed for the UI and release the response after processing. | No password storage or telemetry. |
+
+The range request uses HTTPS, omits credentials, requests response padding, and identifies the client with a descriptive User-Agent. The extension declares only the API host in `host_permissions`; it does not request cookies, tabs, history, storage, identity, or browsing-data permissions. The content script does require page access to provide the requested inline border feedback, so users should treat that permission as part of the trust decision.
+
+SHA-1 deserves precise qualification. SHA-1 is not suitable for new cryptographic security designs, and MDN warns against using it for cryptographic applications.[3] PassBit uses SHA-1 only because the Pwned Passwords range corpus is keyed by SHA-1 and the hash is used as a lookup identifier, not as a password-storage scheme, signature, MAC, or proof of password security. PassBit does not claim that SHA-1 is collision-resistant for general cryptographic use.
+
+K-Anonymity reduces what the API can learn from the application query, but it does not make the entire network path anonymous. A remote service may still observe the partial prefix, timestamp, IP address, and normal transport metadata. PassBit therefore accurately describes the model as **zero-knowledge with respect to the full password and full hash**, not as an anonymity network.
+
+### 2.4 Result interpretation
+
+A **Leaked** result means the exact SHA-1 hash suffix matched a record returned for the queried prefix. The count is the corpus's occurrence count; it is not a count of unique websites, people, or current account compromises. A **Clean result** means no matching suffix was returned by that corpus at query time. A network error means the extension does not make a breach claim.
+
+## Section 3: Architecture & File Structure
+
+Manifest V3 replaces persistent background pages with event-driven service workers. Service workers run away from the page's main thread, cannot use the DOM directly, and should use `fetch()` rather than `XMLHttpRequest()` for network access.[2] PassBit follows those constraints.
+
+| Component | Responsibility | Trust boundary |
+| --- | --- | --- |
+| `manifest.json` | Declares MV3, metadata, popup, service worker, content scripts, icons, minimum Chrome version, and API host permission. | Browser extension policy. |
+| `entropy.js` | Calculates local character sets, pool size, entropy bits, bands, progress percentage, and local suggestions. | Runs in popup and content-script isolated worlds; no network code. |
+| `service-worker.js` | Receives a password only from the extension contexts, hashes it locally, queries the range API, performs suffix matching, and returns a minimal result. | Extension background context and API boundary. |
+| `content.js` | Detects password inputs, installs debounced listeners, applies red/yellow/cyan/green visual states, and shows short tooltip feedback. | Page-facing isolated content-script context. |
+| `popup/index.html` | Defines accessible popup structure, labels, status regions, metric cards, and the creator credit. | Extension UI document. |
+| `popup/popup.css` | Implements dark glassmorphism, responsive spacing, color states, focus treatment, and reduced-motion support. | Local static styling only. |
+| `popup/popup.js` | Connects input and show/hide controls to the local engine and service-worker message flow. | UI controller; no direct API call. |
+| `icons/icon16.png` through `icon128.png` | Provides toolbar and extension-management identity. | Static package assets. |
+| `README.md` | Provides installation, privacy, testing, and GitHub publication guidance. | Public project documentation. |
+
+The event listener in the service worker is registered at top level. The message handler returns a pending response while the asynchronous fetch completes, then returns only `ok`, `status`, `count`, and `queried` fields. The service worker does not write to `chrome.storage`, because PassBit has no feature that requires persistence.
+
+The popup uses an input debounce so that a keystroke does not immediately create a request. A monotonically increasing request identifier prevents a slower response for an old value from overwriting a newer UI state. The show/hide control changes only the local input type and does not copy the password to the clipboard.
+
+The content script uses a `WeakMap` so tracked DOM nodes do not create a long-lived password registry. A `MutationObserver` handles forms rendered after initial page load. The observer tracks password inputs and password-like autocomplete fields, but it does not scan arbitrary text inputs or read page text. Each field receives only a short-lived status overlay and a `data-passbit-state` marker.
+
+## Section 4: Interface & User Experience Specifications
+
+### 4.1 Popup interface
+
+The popup is a focused security panel with a dark background, top-left brand mark, version pill, headline, analyzer card, entropy score panel, two metric cards, an actionable status banner, suggestions, and a footer credit. The popup is intentionally narrow so it fits Chrome's action panel without requiring navigation.
+
+| UI region | Behavior | Accessibility expectation |
+| --- | --- | --- |
+| Header | Shows PassBit, version 1.0.0, and the PB shield mark. | Brand text remains available independently of the icon. |
+| Password input | Accepts a value locally and updates the estimate after each input event. | Visible label, autocomplete hint, focus ring, and password type by default. |
+| Show/HIDE control | Toggles visibility only while the popup remains open. | Button label and `aria-pressed` state change together. |
+| Entropy score | Displays exact estimated bits to one decimal place. | Section label and semantic text are always present. |
+| Progress bar | Maps 0–90 bits to 0–100% and caps beyond 90. | Decorative bar is paired with a textual bit value. |
+| Character pool card | Shows the estimated pool size in symbols. | Text value is exposed, not color-only. |
+| Breach card | Shows Checking, Clean result, hit count, or Unavailable. | Status updates are written into a live region. |
+| Status badge | Uses Weak, Moderate, Strong, or breach-specific guidance. | Color is supplemented by title and advice. |
+| Next Moves | Lists locally derived improvement suggestions. | Native list semantics and readable contrast. |
+| Footer | Credits Firas and states the local-analysis boundary. | Plain text, not an image-only disclosure. |
+
+The status banner is actionable rather than merely decorative. A weak result advises increasing length and variety. A moderate result recommends a longer, unique passphrase for important accounts. A strong result reminds the user that uniqueness, password-manager storage, and MFA remain important. A leaked result instructs the user not to use the password and to change it wherever it was reused.
+
+### 4.2 Inline page integration
+
+On normal web pages, PassBit identifies password inputs and adds a debounced listener for `input`, `change`, and `focus`. It sets a thin border and glow around the field and presents a small tooltip below the field. The tooltip disappears automatically or when focus leaves the field. The page's original value is never replaced and the extension does not submit forms.
+
+| Border state | Meaning | Visual treatment |
+| --- | --- | --- |
+| Red | High risk: weak estimate or exact breach match. | Signal-red border, red glow, and explicit warning text. |
+| Yellow | Caution: 40–65 estimated bits. | Warning-yellow border and improvement guidance. |
+| Cyan | Analysis in progress or transport boundary. | Neon-cyan border and checking state. |
+| Green | Strong estimate or clean corpus result. | Cyber-green border and positive explanatory text. |
+| Purple fallback | Query unavailable. | Purple border with no clean-or-leaked claim. |
+
+The content script does not execute on Chrome internal pages or other restricted browser surfaces. Some websites may replace or encapsulate password controls inside cross-origin frames or browser-managed UI; those surfaces are outside the extension's guaranteed coverage. Content scripts run in an isolated world, but the extension should still be reviewed carefully before being granted broad site access.
+
+### 4.3 Failure states
+
+A network timeout, non-2xx API response, malformed response, or unavailable service worker produces **Unavailable** rather than **Clean**. An empty input clears the metrics and cancels the pending request. If the user types a new value while an old query is in flight, the old response is ignored. Excessively long input is rejected by the service worker with a bounded error to avoid unbounded memory use.
+
+## Section 5: Step-by-Step Setup & Deployment Guide
+
+### 5.1 Local developer installation
+
+First, place the complete PassBit directory on the development computer. Confirm that the root contains `manifest.json`, `entropy.js`, `service-worker.js`, `content.js`, `popup/`, and `icons/`. No package manager or compilation step is required for this implementation.
+
+Open Google Chrome and navigate to `chrome://extensions/`. Enable **Developer mode** in the upper-right corner. Select **Load unpacked** and choose the PassBit directory. Pin the extension to the toolbar, open the popup, and type a test value. For inline integration, open an ordinary HTTPS page with a password field. Use the extension card's **Reload** control after any file edit.
+
+To inspect runtime behavior, use the extension card's **service worker** link to open the service-worker console and use the extension card's **Errors** link for manifest or permission failures. Do not log passwords while testing. If a browser page does not show a border, verify that it is not a browser-internal page, a restricted store page, or a field inside a cross-origin frame.
+
+### 5.2 GitHub open-source deployment
+
+Create an empty GitHub repository, retain the project author as **Firas**, and add an MIT License file. In the project directory, initialize a repository with `git init`, stage the files with `git add .`, create a descriptive first commit with `git commit -m "Initial PassBit Manifest V3 extension"`, add the real repository URL with `git remote add origin <repository-url>`, and push the default branch with `git push -u origin main`.
+
+The public README should explain the K-Anonymity range flow, the entropy formula, the limitations of estimated entropy, the permissions requested, and the local installation steps. The source repository should not contain real passwords, API credentials, browser exports, or captured breach responses. Keep the `LICENSE` file at the repository root and include the Firas attribution requested by the project brief.
+
+### 5.3 Chrome Web Store readiness
+
+Before store submission, review the current Chrome Web Store policies, permission justifications, privacy disclosure requirements, and extension package rules. The broad content-script match pattern is required for the requested inline password-field feature, but it also creates a meaningful trust decision. The store listing should explain why page access is requested, why the Pwned Passwords host is requested, what data is transmitted, and what data is not stored.
+
+## Section 6: Security Review Checklist
+
+| Review area | Acceptance condition |
+| --- | --- |
+| Password handling | No password is written to `chrome.storage`, cookies, URLs, analytics, repository files, or console logs. |
+| Hashing | SHA-1 is used only for the HIBP-compatible range identifier; it is not described as secure password storage. |
+| Transport | API requests use HTTPS, omit credentials, and send only the five-character prefix. |
+| Response handling | Returned suffixes are matched in memory and discarded after the current check. |
+| Manifest | The service worker is MV3, executable code is packaged locally, and permissions are minimal for the feature set. |
+| UI semantics | Red, yellow, cyan, green, and fallback states include text labels and not color alone. |
+| Race safety | Stale asynchronous responses cannot overwrite the current input's state. |
+| Failure safety | Service failure produces Unavailable, never a false Clean state. |
+| Page behavior | The extension does not submit forms, change password values, or copy to the clipboard. |
+| Documentation | The README discloses the privacy model, limitations, author, license direction, and installation path. |
+
+## References
+
+[1]: https://haveibeenpwned.com/API/V3 "Have I Been Pwned API v3 documentation"
+[2]: https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers "Chrome for Developers: Migrate to a service worker"
+[3]: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest "MDN: SubtleCrypto digest() method"

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PassBit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true"><span>PB</span></div>
+        <div>
+          <p class="eyebrow">ZERO-KNOWLEDGE DEFENSE</p>
+          <h1>PassBit</h1>
+        </div>
+      </div>
+      <span class="version-pill">v1.0.0</span>
+    </header>
+
+    <section class="hero-copy" aria-labelledby="page-title">
+      <p class="kicker">PASSWORD SECURITY LAB</p>
+      <h2 id="page-title">Test before you trust.</h2>
+      <p class="subcopy">Analyze entropy locally, then check exposure without sending the password itself.</p>
+    </section>
+
+    <section class="input-card" aria-label="Password analyzer">
+      <label for="password-input">Password to analyze</label>
+      <div class="input-wrap">
+        <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="Type or paste locally…">
+        <button id="toggle-password" class="icon-button" type="button" aria-label="Show password" aria-pressed="false">SHOW</button>
+      </div>
+      <div class="input-meta">
+        <span id="length-label">0 characters</span>
+        <span class="local-chip"><span class="dot"></span>Local analysis</span>
+      </div>
+    </section>
+
+    <section class="score-panel" aria-label="Entropy score">
+      <div class="score-heading">
+        <div>
+          <p class="section-label">ESTIMATED ENTROPY</p>
+          <p class="score-value"><span id="entropy-value">0.0</span><span class="score-unit">bits</span></p>
+        </div>
+        <span id="strength-badge" class="strength-badge neutral">Waiting</span>
+      </div>
+      <div class="progress-track" aria-hidden="true"><div id="progress-bar" class="progress-bar"></div></div>
+      <div class="scale-row"><span>0</span><span>40 weak</span><span>65 strong</span><span>90+</span></div>
+    </section>
+
+    <section class="metrics-grid" aria-label="Security metrics">
+      <article class="metric-card">
+        <div class="metric-icon cyan">∿</div>
+        <div>
+          <p class="metric-label">CHARACTER POOL</p>
+          <p class="metric-value"><span id="pool-value">0</span><span class="metric-unit">symbols</span></p>
+        </div>
+      </article>
+      <article class="metric-card">
+        <div id="breach-icon" class="metric-icon purple">◇</div>
+        <div>
+          <p class="metric-label">BREACH STATUS</p>
+          <p id="breach-value" class="metric-value compact">Not checked</p>
+        </div>
+      </article>
+    </section>
+
+    <section id="status-card" class="status-card neutral" aria-live="polite">
+      <div id="status-icon" class="status-icon">i</div>
+      <div>
+        <p id="status-title" class="status-title">Start with a password</p>
+        <p id="status-text" class="status-text">Your password is analyzed in this browser. The breach check is optional and uses a partial hash only.</p>
+      </div>
+    </section>
+
+    <section class="suggestions-section" aria-labelledby="suggestions-title">
+      <div class="section-row"><p id="suggestions-title" class="section-label">NEXT MOVES</p><span id="suggestion-count" class="count-pill">0</span></div>
+      <ul id="suggestions-list" class="suggestions-list"><li class="empty-suggestion">Suggestions will appear as you type.</li></ul>
+    </section>
+
+    <footer class="footer">
+      <span>Built by <strong>Firas</strong></span>
+      <span class="footer-separator">•</span>
+      <span>Passwords never leave this browser</span>
+    </footer>
+  </main>
+  <script src="../entropy.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
