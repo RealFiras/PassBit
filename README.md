@@ -1,16 +1,16 @@
 # PassBit
 
-**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version **1.1.0** adds an Arabic-first simplified interface, a cryptographically random local password generator, actionable improvement suggestions, and a double-click quick-scan chip beside password fields. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, no telemetry, and no password storage.
+**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version **1.2.0** adds an Arabic-first minimal interface, a cryptographically random local password generator, actionable improvement suggestions, a double-click quick-scan chip beside password fields, and an opt-in encrypted local favorites vault. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
 
 > PassBit is a defensive decision aid. A clean breach response does not prove that a password is safe, and entropy is an estimate rather than a guarantee.
 
 ## What is included
 
-The extension package contains `manifest.json` for the MV3 declaration, `entropy.js` for local character-pool and entropy analysis, `service-worker.js` for local SHA-1 hashing and the range request, `content.js` for password-field integration and the double-click quick-scan chip, and `popup/` for the Arabic user interface, generator, and suggestions. The `icons/` directory contains the generated brand icons. `SPECIFICATION.md` contains the full technical design and security model.
+The extension package contains `manifest.json` for the MV3 declaration, `entropy.js` for local character-pool, entropy, and generator logic, `vault.js` for PBKDF2/AES-GCM encrypted favorites, `service-worker.js` for local SHA-1 hashing and the range request, `content.js` for password-field integration and the double-click quick-scan chip, and `popup/` for the Arabic user interface, generator, suggestions, and vault controls. The `icons/` directory contains the generated brand icons. `SPECIFICATION.md` contains the full technical design and security model.
 
-## Version 1.1.0 user flow
+## Version 1.2.0 user flow
 
-The popup now leads with one question: **هل كلمة المرور آمنة؟** Type a password to get a simple result, a breach status, and short suggestions. Open **تفاصيل تقنية اختيارية** only when the entropy number or character-pool estimate is useful to you. Use **توليد كلمة مرور** to create a 20-character value with lowercase, uppercase, numbers, and symbols selected using the browser's cryptographic random source. You can copy it or place it into the analyzer for a breach check.
+The popup now leads with one question: **هل كلمة المرور آمنة؟** Type a password to get a simple result, a breach status, and short suggestions. Use **توليد** to create a 20-character value with lowercase, uppercase, numbers, and symbols selected using the browser's cryptographic random source. You can copy it or place it into the analyzer for a breach check. The **المفضلة** tab contains the optional encrypted vault and is separate from the quick check.
 
 On a regular website, double-click a password field. PassBit shows a small **PB · فحص** action beside the field; click it to open the inline scan panel and see the strength, breach result, and suggestions. Chrome does not provide a reliable way for a content script to force the browser toolbar popup open from a page event, so the inline action is the supported equivalent. The toolbar icon remains available for the full popup.
 
@@ -22,9 +22,15 @@ If a file is edited while the extension is loaded, return to `chrome://extension
 
 ## Privacy model
 
-PassBit computes the Shannon-style estimate locally as `E = L × log2(R)`, where `L` is the number of Unicode code points and `R` is the active character-pool estimate. The breach check computes SHA-1 locally, sends only the first five hexadecimal characters to the Pwned Passwords range endpoint, and compares the returned suffixes in memory. The full password is never placed in a URL, request body, extension storage, analytics event, or console log.
+PassBit computes the Shannon-style estimate locally as `E = L × log2(R)`, where `L` is the number of Unicode code points and `R` is the active character-pool estimate. The breach check computes SHA-1 locally, sends only the first five hexadecimal characters to the Pwned Passwords range endpoint, and compares the returned suffixes in memory. The full password is never placed in a URL, request body, analytics event, or console log. If the user explicitly saves a favorite, its record is stored only inside an authenticated encrypted envelope.
 
 The range endpoint is operated by Have I Been Pwned. PassBit uses HTTPS, omits credentials, requests padding, and immediately discards the response after the local match. The endpoint's current documentation describes the same range-query pattern for checking a password without sending the full hash or password.[1]
+
+## Encrypted favorites vault
+
+The favorites vault is opt-in. On first use, the user creates a master passphrase of at least 12 characters. PassBit derives an AES-256-GCM key with PBKDF2-HMAC-SHA-256, a random per-vault salt, and 600,000 iterations. Each save uses a fresh random 12-byte IV. `chrome.storage.local` receives only the versioned salt, KDF parameters, IV, and ciphertext envelope; the master passphrase and decrypted favorite records remain in memory for the current popup session.
+
+The vault locks automatically when the popup session ends, and the user can lock it manually. There is no password-recovery or reset path: forgetting the master passphrase means the encrypted favorites cannot be decrypted. Encryption at rest does not protect an unlocked session, a compromised browser profile, malware, or an attacker who learns the master passphrase. The copy action is explicit and may place a generated or saved password on the operating system clipboard.
 
 ## Algorithm bands
 
@@ -44,9 +50,9 @@ Publish the project under the MIT License by adding a `LICENSE` file that contai
 
 ## Development checklist
 
-The extension should be tested in a clean Chrome profile and in a profile with strict privacy settings. Confirm that the popup handles empty input, Unicode characters, long input, show/hide behavior, network failure, HTTP failure, a known test password, and a clean result. Confirm that password values do not appear in DevTools logs, extension storage, URLs, or repository files.
+The extension should be tested in a clean Chrome profile and in a profile with strict privacy settings. Confirm that the popup handles empty input, Unicode characters, long input, show/hide behavior, generator output, vault creation, wrong-passphrase rejection, lock/unlock, delete confirmation, network failure, HTTP failure, a known test password, and a clean result. Confirm that password values do not appear in DevTools logs, URLs, or repository files, and that extension storage contains only an encrypted envelope after a favorite is saved.
 
-The manifest grants access only to the Pwned Passwords API host plus the page access needed for inline password-field analysis. No permissions are requested for tabs, history, cookies, storage, scripting, or identity. Page access is used for password-field feedback, the double-click chip, and the inline suggestion panel; the extension does not submit forms or change their values.
+The manifest grants the `storage` permission for the encrypted favorites envelope, the Pwned Passwords API host, plus the page access needed for inline password-field analysis. No permissions are requested for tabs, history, cookies, scripting, or identity. Page access is used for password-field feedback, the double-click chip, and the inline suggestion panel; the extension does not submit forms or change their values.
 
 ## References
 

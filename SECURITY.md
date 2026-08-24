@@ -2,13 +2,13 @@
 
 ## Security boundary
 
-PassBit is designed to keep the full password and the full SHA-1 hash in the browser. The breach check sends only the first five hexadecimal characters of the locally computed hash to the Pwned Passwords range endpoint. The returned suffix records are compared locally and are not persisted.
+PassBit is designed to keep the full password and the full SHA-1 hash in the browser. The breach check sends only the first five hexadecimal characters of the locally computed hash to the Pwned Passwords range endpoint. The returned suffix records are compared locally and are not persisted. An explicitly saved favorite is encrypted with AES-GCM before it is written to `chrome.storage.local`; the master passphrase is never stored.
 
 PassBit does not provide password storage, account recovery, identity verification, malware protection, or a guarantee that a password has never been exposed. The local generator creates a candidate in memory and the inline double-click panel reads only the selected password field to perform the requested check. A compromised operating system, malicious browser extension, hostile webpage, or remote-access tool may observe a password independently of PassBit.
 
 ## Supported security assumptions
 
-The extension assumes that Chrome's extension isolation, the browser's HTTPS validation, and the Pwned Passwords API endpoint are operating as expected. It also assumes that the user understands the requested broad page access needed for inline password-field feedback. The result labelled Clean means only that the exact hash was not returned by the queried corpus at the time of the check.
+The extension assumes that Chrome's extension isolation, the browser's HTTPS validation, and the Pwned Passwords API endpoint are operating as expected. It also assumes that the user understands the requested broad page access needed for inline password-field feedback. The result labelled Clean means only that the exact hash was not returned by the queried corpus at the time of the check. Vault encryption protects data at rest but not an unlocked popup, a compromised browser profile, malware, or a disclosed master passphrase; there is no recovery path.
 
 ## Reporting a vulnerability
 

@@ -3,103 +3,96 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PassBit — فحص كلمة المرور</title>
+  <title>PassBit</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand-lockup">
-        <div class="brand-mark" aria-hidden="true"><span>PB</span></div>
-        <div>
-          <p class="eyebrow">حماية بدون كشف كلمة المرور</p>
-          <h1>PassBit</h1>
-        </div>
+        <div class="brand-mark" aria-hidden="true">PB</div>
+        <div><h1>PassBit</h1><p>فحص وخزنة محلية</p></div>
       </div>
-      <span class="version-pill">1.1.0</span>
+      <span class="version-pill">1.2.0</span>
     </header>
 
-    <section class="intro" aria-labelledby="page-title">
-      <p class="kicker">فحص سريع</p>
-      <h2 id="page-title">هل كلمة المرور آمنة؟</h2>
-      <p>اكتبها هنا، وسنوضح لك النتيجة ونقترح تحسينات عملية.</p>
-    </section>
+    <nav class="tabs" aria-label="أقسام PassBit">
+      <button class="tab active" data-tab="check-view" type="button">فحص</button>
+      <button class="tab" data-tab="favorites-view" type="button">المفضلة</button>
+    </nav>
 
-    <section class="input-card" aria-label="فحص كلمة المرور">
-      <label for="password-input">كلمة المرور</label>
-      <div class="input-wrap">
-        <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="اكتب كلمة المرور هنا…">
-        <button id="toggle-password" class="text-button" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button>
-      </div>
-      <div class="input-meta">
-        <span id="length-label">لم تكتب شيئًا بعد</span>
-        <span class="local-chip"><span class="dot"></span>الفحص محلي</span>
-      </div>
-    </section>
-
-    <section id="result-card" class="result-card neutral" aria-live="polite">
-      <div id="result-icon" class="result-icon">؟</div>
-      <div class="result-copy">
-        <p id="result-title" class="result-title">ابدأ بكتابة كلمة المرور</p>
-        <p id="result-description" class="result-description">لن نرسل كلمة المرور نفسها. سيظهر هنا قرار واضح ومختصر.</p>
-      </div>
-    </section>
-
-    <section class="breach-row" aria-live="polite">
-      <div class="breach-symbol" id="breach-icon">◇</div>
-      <div>
-        <p class="field-label">فحص التسريبات</p>
-        <p id="breach-value" class="breach-value">بانتظار الإدخال</p>
-      </div>
-      <span id="strength-badge" class="strength-badge neutral">—</span>
-    </section>
-
-    <section class="generator-card" aria-labelledby="generator-title">
-      <div class="section-heading">
-        <div>
-          <p class="kicker">بدون تخمين</p>
-          <h3 id="generator-title">ولّد كلمة مرور قوية</h3>
+    <section id="check-view" class="tab-panel">
+      <section class="input-card">
+        <label for="password-input">كلمة المرور</label>
+        <div class="input-wrap">
+          <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="اكتبها هنا…">
+          <button id="toggle-password" class="text-button" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button>
         </div>
-        <span class="sparkle" aria-hidden="true">✦</span>
-      </div>
-      <p class="section-help">تُنشأ داخل المتصفح ولا يتم حفظها أو إرسالها.</p>
-      <div class="generator-output-row">
-        <output id="generated-password" class="generated-password" aria-live="polite">اضغط «توليد»</output>
-        <button id="copy-generated" class="small-button" type="button" aria-label="نسخ كلمة المرور المولدة" disabled>نسخ</button>
-      </div>
-      <div class="generator-actions">
-        <button id="generate-password" class="primary-button" type="button">توليد كلمة مرور</button>
-        <button id="use-generated" class="secondary-button" type="button" disabled>فحصها</button>
-      </div>
-      <p id="copy-feedback" class="copy-feedback" aria-live="polite"></p>
+        <div class="input-meta"><span id="length-label">لم تكتب شيئًا بعد</span><span class="local-chip"><span class="dot"></span>محلي</span></div>
+      </section>
+
+      <section id="result-card" class="result-card neutral" aria-live="polite">
+        <div id="result-icon" class="result-icon">؟</div>
+        <div><p id="result-title" class="result-title">جاهز للفحص</p><p id="result-description" class="result-description">اكتب كلمة المرور لترى النتيجة.</p></div>
+      </section>
+
+      <section class="breach-row" aria-live="polite">
+        <div id="breach-icon" class="breach-symbol">◇</div>
+        <div><p class="field-label">التسريبات</p><p id="breach-value" class="breach-value">بانتظار الإدخال</p></div>
+        <span id="strength-badge" class="strength-badge neutral">—</span>
+      </section>
+
+      <section class="suggestions-card">
+        <div class="section-heading"><h2>كيف تحسّنها؟</h2><span id="suggestion-count" class="count-pill">0</span></div>
+        <ul id="suggestions-list" class="suggestions-list"><li class="empty-suggestion">ستظهر هنا نصائح قصيرة.</li></ul>
+      </section>
+
+      <section class="generator-card">
+        <div class="section-heading"><h2>تريد واحدة أقوى؟</h2><button id="generate-password" class="primary-button compact-button" type="button">توليد</button></div>
+        <div class="generator-output-row"><output id="generated-password" class="generated-password">—</output><button id="copy-generated" class="small-button" type="button" disabled>نسخ</button></div>
+        <div class="generator-actions"><button id="use-generated" class="secondary-button" type="button" disabled>استخدمها للفحص</button></div>
+        <p id="copy-feedback" class="copy-feedback" aria-live="polite"></p>
+      </section>
+
+      <details class="save-card">
+        <summary><span>حفظ هذه الكلمة في المفضلة</span><span class="lock-label">مشفّر</span></summary>
+        <div class="save-grid"><input id="favorite-name" type="text" maxlength="100" placeholder="اسم الخدمة"><input id="favorite-username" type="text" maxlength="150" placeholder="اسم المستخدم (اختياري)"></div>
+        <button id="save-favorite" class="primary-button full-button" type="button" disabled>احفظ كلمة المرور</button>
+        <p id="save-feedback" class="copy-feedback" aria-live="polite"></p>
+      </details>
     </section>
 
-    <section class="suggestions-card" aria-labelledby="suggestions-title">
-      <div class="section-heading compact-heading">
-        <h3 id="suggestions-title">اقتراحات لتحسينها</h3>
-        <span id="suggestion-count" class="count-pill">0</span>
-      </div>
-      <ul id="suggestions-list" class="suggestions-list">
-        <li class="empty-suggestion">ستظهر الاقتراحات بعد كتابة كلمة المرور.</li>
-      </ul>
+    <section id="favorites-view" class="tab-panel" hidden>
+      <section id="vault-setup" class="vault-card">
+        <div class="section-heading"><h2>أنشئ خزنتك</h2><span class="lock-label">محلي فقط</span></div>
+        <p class="section-help">اختر عبارة رئيسية طويلة. لا يوجد استرجاع إذا نسيتها.</p>
+        <input id="setup-passphrase" class="vault-input" type="password" autocomplete="new-password" placeholder="العبارة الرئيسية — 12 حرفًا على الأقل">
+        <input id="setup-confirm" class="vault-input" type="password" autocomplete="new-password" placeholder="أعد كتابة العبارة الرئيسية">
+        <button id="setup-vault" class="primary-button full-button" type="button">إنشاء خزنة مشفّرة</button>
+        <p id="setup-feedback" class="form-feedback" aria-live="polite"></p>
+      </section>
+
+      <section id="vault-locked" class="vault-card" hidden>
+        <div class="section-heading"><h2>الخزنة مقفلة</h2><span class="lock-label">🔒</span></div>
+        <p class="section-help">أدخل العبارة الرئيسية لفك التشفير في هذه الجلسة فقط.</p>
+        <input id="unlock-passphrase" class="vault-input" type="password" autocomplete="current-password" placeholder="العبارة الرئيسية">
+        <button id="unlock-vault" class="primary-button full-button" type="button">فتح الخزنة</button>
+        <p id="unlock-feedback" class="form-feedback" aria-live="polite"></p>
+      </section>
+
+      <section id="vault-unlocked" class="vault-card" hidden>
+        <div class="section-heading"><h2>المفضلة</h2><button id="lock-vault" class="secondary-button" type="button">قفل</button></div>
+        <p id="vault-count" class="section-help">لا توجد كلمات محفوظة.</p>
+        <div id="favorite-list" class="favorite-list"></div>
+        <button id="delete-vault" class="danger-button full-button" type="button">حذف الخزنة والبيانات</button>
+        <p class="vault-warning">الحذف نهائي. التشفير يحمي البيانات المخزنة، لكنه لا يحمي جهازًا مصابًا أو جلسة مفتوحة.</p>
+      </section>
     </section>
 
-    <details class="details-card">
-      <summary>تفاصيل تقنية اختيارية</summary>
-      <div class="details-grid">
-        <span>قوة تقديرية</span><strong><span id="entropy-value">0.0</span> بت</strong>
-        <span>حجم مجموعة الأحرف</span><strong><span id="pool-value">0</span> رمز</strong>
-      </div>
-      <p>هذه أرقام تقديرية وليست ضمانًا. الأفضل استخدام كلمة فريدة ومدير كلمات مرور وتفعيل المصادقة الثنائية.</p>
-    </details>
-
-    <footer class="footer">
-      <span>صنعه <strong>Firas</strong></span>
-      <span class="footer-separator">•</span>
-      <span>كلمات المرور لا تُحفظ</span>
-    </footer>
+    <footer class="footer">صنعه <strong>Firas</strong> · لا يتم حفظ كلمة المرور غير المشفّرة</footer>
   </main>
   <script src="../entropy.js"></script>
+  <script src="../vault.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

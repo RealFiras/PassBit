@@ -1,13 +1,13 @@
 # PassBit — Zero-Knowledge Entropy & Breach Detector
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Author:** Firas — Cybersecurity Student & Web Security Researcher  
 **Platform:** Google Chrome Extension, Manifest V3  
 **Document status:** Production-oriented implementation specification
 
 ## Scope and design intent
 
-PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, and generates strong passwords locally. Version 1.1.0 adds an Arabic-first simplified popup, actionable Arabic suggestions, a cryptographically random generator, and a double-click quick-scan chip beside page password fields. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
+PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.2.0 adds a minimal Arabic-first popup, actionable Arabic suggestions, a cryptographically random generator, an opt-in PBKDF2/AES-GCM vault, and a double-click quick-scan chip beside page password fields. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
 
 The security boundary is explicit. Entropy is a mathematical estimate based on an assumed character pool; it is not a proof that a password is random. The breach result is a corpus lookup; a clean response does not prove that a password has never been exposed elsewhere. The UI uses this language so that users are not given false certainty.
 
@@ -36,7 +36,7 @@ The logo concept is a minimalist cyber shield fused with a digital “Bit” key
 
 ### 1.3 Product principles
 
-PassBit follows five product principles. First, the password remains in memory only for the shortest practical time and is never persisted by the extension. Second, the privacy model is visible to the user rather than hidden in a legal footnote. Third, every remote result is treated as a signal with limitations. Fourth, the interface must be useful while a user is completing a form, not only after a form is submitted. Fifth, all executable JavaScript is packaged locally, consistent with Manifest V3's extension security model.[2]
+PassBit follows five product principles. First, an unsaved password remains in memory only for the shortest practical time; an explicitly saved favorite is stored only as authenticated ciphertext. Second, the privacy model is visible to the user rather than hidden in a legal footnote. Third, every remote result is treated as a signal with limitations. Fourth, the interface must be useful while a user is completing a form, not only after a form is submitted. Fifth, all executable JavaScript is packaged locally, consistent with Manifest V3's extension security model.[2]
 
 ## Section 2: Mathematical Algorithms & Security Models
 
@@ -81,7 +81,21 @@ SHA-1 deserves precise qualification. SHA-1 is not suitable for new cryptographi
 
 K-Anonymity reduces what the API can learn from the application query, but it does not make the entire network path anonymous. A remote service may still observe the partial prefix, timestamp, IP address, and normal transport metadata. PassBit therefore accurately describes the model as **zero-knowledge with respect to the full password and full hash**, not as an anonymity network.
 
-### 2.4 Result interpretation
+### 2.4 Encrypted local favorites vault
+
+The favorites vault is opt-in and is opened from the separate **المفضلة** tab. The user creates a master passphrase of at least 12 characters. PassBit derives an AES-256-GCM key with PBKDF2-HMAC-SHA-256, a random 16-byte salt, and 600,000 iterations. Each encryption save uses a fresh random 12-byte IV and authenticated 128-bit GCM tag.
+
+| Stored envelope field | Purpose | Plaintext status |
+| --- | --- | --- |
+| `version` | Identifies the envelope format. | Non-secret metadata. |
+| `kdf` | Records PBKDF2 hash and iteration parameters. | Non-secret metadata. |
+| `salt` | Makes the password-derived key unique to the vault. | Non-secret random value. |
+| `iv` | Makes each AES-GCM encryption invocation unique. | Non-secret random value. |
+| `ciphertext` | Contains the favorite names, optional usernames, passwords, IDs, and timestamps. | Authenticated ciphertext only. |
+
+Only this envelope is written to `chrome.storage.local`. The master passphrase is never stored, decrypted favorites are held only in popup memory, and the vault is locked when the popup session ends or the user presses **قفل**. There is no recovery path. Encryption at rest does not protect an unlocked popup, a compromised browser profile, malware, or a disclosed master passphrase. This is a local encrypted favorites feature, not a claim that PassBit replaces a mature password-manager product.
+
+### 2.5 Result interpretation
 
 A **Leaked** result means the exact SHA-1 hash suffix matched a record returned for the queried prefix. The count is the corpus's occurrence count; it is not a count of unique websites, people, or current account compromises. A **Clean result** means no matching suffix was returned by that corpus at query time. A network error means the extension does not make a breach claim.
 
@@ -91,38 +105,40 @@ Manifest V3 replaces persistent background pages with event-driven service worke
 
 | Component | Responsibility | Trust boundary |
 | --- | --- | --- |
-| `manifest.json` | Declares MV3, metadata, popup, service worker, content scripts, icons, minimum Chrome version, and API host permission. | Browser extension policy. |
-| `entropy.js` | Calculates local character sets, pool size, entropy bits, bands, progress percentage, and local suggestions. | Runs in popup and content-script isolated worlds; no network code. |
+| `manifest.json` | Declares MV3, metadata, popup, service worker, content scripts, icons, minimum Chrome version, API host permission, and the `storage` permission. | Browser extension policy. |
+| `entropy.js` | Calculates local character sets, pool size, entropy bits, bands, progress percentage, local suggestions, and cryptographically random generator output. | Runs in popup and content-script isolated worlds; no network code. |
+| `vault.js` | Derives keys with PBKDF2, encrypts/decrypts favorite records with AES-GCM, and exposes storage-envelope operations without persisting plaintext. | Extension popup only; the master passphrase remains in memory. |
 | `service-worker.js` | Receives a password only from the extension contexts, hashes it locally, queries the range API, performs suffix matching, and returns a minimal result. | Extension background context and API boundary. |
 | `content.js` | Detects password inputs, responds to a double-click with a small PB quick-scan action, opens an inline scan panel, applies red/yellow/cyan/green visual states, and shows Arabic suggestions. | Page-facing isolated content-script context. |
 | `popup/index.html` | Defines the Arabic RTL popup, plain-language result card, generator controls, suggestions, optional technical details, and creator credit. | Extension UI document. |
 | `popup/popup.css` | Implements dark glassmorphism, responsive spacing, color states, focus treatment, and reduced-motion support. | Local static styling only. |
-| `popup/popup.js` | Connects Arabic input, show/hide controls, generator, copy/use actions, suggestions, and service-worker message flow. | UI controller; no direct API call. |
+| `popup/popup.js` | Connects Arabic input, show/hide controls, generator, copy/use actions, suggestions, tab switching, and vault setup/unlock/lock/save/delete flows. | UI controller; no direct API call. |
 | `icons/icon16.png` through `icon128.png` | Provides toolbar and extension-management identity. | Static package assets. |
 | `README.md` | Provides installation, privacy, testing, and GitHub publication guidance. | Public project documentation. |
 
-The event listener in the service worker is registered at top level. The message handler returns a pending response while the asynchronous fetch completes, then returns only `ok`, `status`, `count`, and `queried` fields. The service worker does not write to `chrome.storage`, because PassBit has no feature that requires persistence.
+The event listener in the service worker is registered at top level. The message handler returns a pending response while the asynchronous fetch completes, then returns only `ok`, `status`, `count`, and `queried` fields. Vault storage is handled by the popup through `vault.js`; the service worker does not write vault data.
 
 The popup uses an input debounce so that a keystroke does not immediately create a request. A monotonically increasing request identifier prevents a slower response for an old value from overwriting a newer UI state. The show/hide control changes only the local input type. The generator uses `crypto.getRandomValues`, forces at least one character from each configured group, shuffles the result with the same random source, and keeps the value in memory until the user copies it or sends it to the analyzer.
 
-The content script uses a `WeakMap` for per-field UI state and a bounded set only for repositioning visible controls during scrolling. A `MutationObserver` handles forms rendered after initial page load. The observer tracks password inputs and password-like autocomplete fields, but it does not scan arbitrary text inputs or read page text. A double-click shows a small `PB · فحص` action beside the field; the user clicks that action to open the inline scan panel. Each field receives only a short-lived state marker and panel. Chrome does not provide a reliable content-script path for forcing the toolbar popup open from a page event, so the inline action is the supported equivalent; the toolbar icon remains available for the full popup.[4] [5]
+The content script uses a `WeakMap` for per-field UI state and a bounded set only for repositioning visible controls during scrolling. A `MutationObserver` handles forms rendered after initial page load. The observer tracks password inputs and password-like autocomplete fields, but it does not scan arbitrary text inputs or read page text. A double-click shows a small `PB · فحص` action beside the field; the user clicks that action to open the inline scan panel. Each field receives only a short-lived state marker and panel. Chrome does not provide a reliable content-script path for forcing the toolbar popup open from a page event, so the inline action is the supported equivalent; the toolbar icon remains available for the full popup.[6] [7]
 
 ## Section 4: Interface & User Experience Specifications
 
 ### 4.1 Popup interface
 
-The popup is a focused Arabic RTL security panel with a dark background, brand mark, short headline, password field, one prominent result card, breach status, local generator, improvement suggestions, optional technical details, and a footer credit. The interface intentionally hides entropy and character-pool details behind a disclosure element so a normal user can act without learning security terminology.
+The popup is a focused Arabic RTL security panel with a dark background, brand mark, two short tabs, password field, one prominent result card, breach status, local generator, improvement suggestions, and an optional encrypted favorites tab. The interface intentionally hides entropy and character-pool details from the main view so a normal user can act without learning security terminology.
 
 | UI region | Behavior | Accessibility expectation |
 | --- | --- | --- |
-| Header | Shows PassBit, version 1.1.0, and the PB shield mark. | Brand text remains available independently of the icon. |
+| Header | Shows PassBit, version 1.2.0, and the PB shield mark. | Brand text remains available independently of the icon. |
 | Password input | Accepts a value locally and updates the estimate after each input event. | Visible label, autocomplete hint, focus ring, and password type by default. |
 | Show/HIDE control | Toggles visibility only while the popup remains open. | Button label and `aria-pressed` state change together. |
 | Main result | Shows Arabic Weak, Moderate, or Strong guidance in plain language. | The action text is visible and not color-only. |
 | Breach status | Shows checking, clean result, hit count, or unavailable. | Status updates are written into a live region. |
 | Generator | Creates a 20-character strong candidate locally. | The generated value is visible in a selectable output with copy/use controls. |
 | Suggestions | Lists Arabic, locally derived improvement suggestions. | Native list semantics and readable contrast. |
-| Technical details | Shows entropy bits and estimated character-pool size only when expanded. | Advanced data is optional rather than blocking the main decision. |
+| Favorites tab | Creates, unlocks, locks, and deletes the opt-in encrypted local vault. | The master passphrase is required and there is no recovery path. |
+| Technical details | The main quick-check view avoids technical numbers; vault warnings remain visible. | Advanced data is optional rather than blocking the main decision. |
 | Footer | Credits Firas and states the local-analysis boundary. | Plain text, not an image-only disclosure. |
 
 The main result card is actionable rather than merely decorative. A weak result advises increasing length and variety. A moderate result recommends a longer, unique passphrase for important accounts. A strong result reminds the user that uniqueness, password-manager storage, and MFA remain important. A leaked result instructs the user not to use the password and to change it wherever it was reused. The generator offers a practical alternative instead of requiring the user to invent a stronger value.
@@ -177,7 +193,9 @@ Before store submission, review the current Chrome Web Store policies, permissio
 | UI semantics | Red, yellow, cyan, green, and fallback states include text labels and not color alone. |
 | Race safety | Stale asynchronous responses cannot overwrite the current input's state. |
 | Failure safety | Service failure produces Unavailable, never a false Clean state. |
-| Page behavior | The extension does not submit forms, change password values, or copy to the clipboard. |
+| Page behavior | The extension does not submit forms, change password values, or copy to the clipboard from a page event. |
+| Vault confidentiality | `chrome.storage.local` contains only the versioned salt, KDF parameters, IV, and AES-GCM ciphertext envelope. |
+| Vault lifecycle | The master passphrase and decrypted favorites are cleared when the popup session ends or the user locks the vault. |
 | Documentation | The README discloses the privacy model, limitations, author, license direction, and installation path. |
 
 ## References
@@ -185,5 +203,7 @@ Before store submission, review the current Chrome Web Store policies, permissio
 [1]: https://haveibeenpwned.com/API/V3 "Have I Been Pwned API v3 documentation"
 [2]: https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers "Chrome for Developers: Migrate to a service worker"
 [3]: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest "MDN: SubtleCrypto digest() method"
-[4]: https://developer.chrome.com/docs/extensions/reference/api/action "Chrome for Developers: chrome.action API"
-[5]: https://developer.chrome.com/docs/extensions/develop/concepts/messaging "Chrome for Developers: Message passing"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey "MDN: SubtleCrypto deriveKey() method"
+[5]: https://developer.chrome.com/docs/extensions/develop/concepts/storage-and-cookies "Chrome for Developers: Storage and cookies"
+[6]: https://developer.chrome.com/docs/extensions/reference/api/action "Chrome for Developers: chrome.action API"
+[7]: https://developer.chrome.com/docs/extensions/develop/concepts/messaging "Chrome for Developers: Message passing"

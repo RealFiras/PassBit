@@ -1,11 +1,13 @@
 {
   "manifest_version": 3,
   "name": "PassBit - Zero-Knowledge Entropy & Breach Detector",
-  "version": "1.1.0",
-  "description": "Arabic-first privacy-aware password strength, generator, and breach detector by Firas.",
+  "version": "1.2.0",
+  "description": "Arabic-first private password checker, generator, and encrypted local favorites by Firas.",
   "author": "Firas",
   "minimum_chrome_version": "88",
-  "permissions": [],
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
     "https://api.pwnedpasswords.com/*"
   ],
