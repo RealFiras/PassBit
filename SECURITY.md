@@ -4,7 +4,7 @@
 
 PassBit is designed to keep the full password and the full SHA-1 hash in the browser. The breach check sends only the first five hexadecimal characters of the locally computed hash to the Pwned Passwords range endpoint. The returned suffix records are compared locally and are not persisted.
 
-PassBit does not provide password storage, account recovery, identity verification, malware protection, or a guarantee that a password has never been exposed. A compromised operating system, malicious browser extension, hostile webpage, or remote-access tool may observe a password independently of PassBit.
+PassBit does not provide password storage, account recovery, identity verification, malware protection, or a guarantee that a password has never been exposed. The local generator creates a candidate in memory and the inline double-click panel reads only the selected password field to perform the requested check. A compromised operating system, malicious browser extension, hostile webpage, or remote-access tool may observe a password independently of PassBit.
 
 ## Supported security assumptions
 
@@ -16,4 +16,4 @@ Do not publish a real password, breach response, API credential, browser export,
 
 ## Safe development rules
 
-Never add password values to logs, screenshots, fixtures, tests, URLs, commits, issue reports, or analytics. Use public test values only. Keep executable code packaged locally and review any permission or host-pattern change before release. Re-run the syntax, manifest, and behavior checks before publishing a new tag.
+Never add password values to logs, screenshots, fixtures, tests, URLs, commits, issue reports, or analytics. Use public test values only. The copy button is an explicit user action and may place a generated password on the operating system clipboard; users should clear the clipboard when appropriate. Keep executable code packaged locally and review any permission or host-pattern change before release. Re-run the syntax, manifest, and behavior checks before publishing a new tag.

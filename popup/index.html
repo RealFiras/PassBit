@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PassBit</title>
+  <title>PassBit — فحص كلمة المرور</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -12,77 +12,91 @@
       <div class="brand-lockup">
         <div class="brand-mark" aria-hidden="true"><span>PB</span></div>
         <div>
-          <p class="eyebrow">ZERO-KNOWLEDGE DEFENSE</p>
+          <p class="eyebrow">حماية بدون كشف كلمة المرور</p>
           <h1>PassBit</h1>
         </div>
       </div>
-      <span class="version-pill">v1.0.0</span>
+      <span class="version-pill">1.1.0</span>
     </header>
 
-    <section class="hero-copy" aria-labelledby="page-title">
-      <p class="kicker">PASSWORD SECURITY LAB</p>
-      <h2 id="page-title">Test before you trust.</h2>
-      <p class="subcopy">Analyze entropy locally, then check exposure without sending the password itself.</p>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="kicker">فحص سريع</p>
+      <h2 id="page-title">هل كلمة المرور آمنة؟</h2>
+      <p>اكتبها هنا، وسنوضح لك النتيجة ونقترح تحسينات عملية.</p>
     </section>
 
-    <section class="input-card" aria-label="Password analyzer">
-      <label for="password-input">Password to analyze</label>
+    <section class="input-card" aria-label="فحص كلمة المرور">
+      <label for="password-input">كلمة المرور</label>
       <div class="input-wrap">
-        <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="Type or paste locally…">
-        <button id="toggle-password" class="icon-button" type="button" aria-label="Show password" aria-pressed="false">SHOW</button>
+        <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="اكتب كلمة المرور هنا…">
+        <button id="toggle-password" class="text-button" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button>
       </div>
       <div class="input-meta">
-        <span id="length-label">0 characters</span>
-        <span class="local-chip"><span class="dot"></span>Local analysis</span>
+        <span id="length-label">لم تكتب شيئًا بعد</span>
+        <span class="local-chip"><span class="dot"></span>الفحص محلي</span>
       </div>
     </section>
 
-    <section class="score-panel" aria-label="Entropy score">
-      <div class="score-heading">
-        <div>
-          <p class="section-label">ESTIMATED ENTROPY</p>
-          <p class="score-value"><span id="entropy-value">0.0</span><span class="score-unit">bits</span></p>
-        </div>
-        <span id="strength-badge" class="strength-badge neutral">Waiting</span>
+    <section id="result-card" class="result-card neutral" aria-live="polite">
+      <div id="result-icon" class="result-icon">؟</div>
+      <div class="result-copy">
+        <p id="result-title" class="result-title">ابدأ بكتابة كلمة المرور</p>
+        <p id="result-description" class="result-description">لن نرسل كلمة المرور نفسها. سيظهر هنا قرار واضح ومختصر.</p>
       </div>
-      <div class="progress-track" aria-hidden="true"><div id="progress-bar" class="progress-bar"></div></div>
-      <div class="scale-row"><span>0</span><span>40 weak</span><span>65 strong</span><span>90+</span></div>
     </section>
 
-    <section class="metrics-grid" aria-label="Security metrics">
-      <article class="metric-card">
-        <div class="metric-icon cyan">∿</div>
-        <div>
-          <p class="metric-label">CHARACTER POOL</p>
-          <p class="metric-value"><span id="pool-value">0</span><span class="metric-unit">symbols</span></p>
-        </div>
-      </article>
-      <article class="metric-card">
-        <div id="breach-icon" class="metric-icon purple">◇</div>
-        <div>
-          <p class="metric-label">BREACH STATUS</p>
-          <p id="breach-value" class="metric-value compact">Not checked</p>
-        </div>
-      </article>
-    </section>
-
-    <section id="status-card" class="status-card neutral" aria-live="polite">
-      <div id="status-icon" class="status-icon">i</div>
+    <section class="breach-row" aria-live="polite">
+      <div class="breach-symbol" id="breach-icon">◇</div>
       <div>
-        <p id="status-title" class="status-title">Start with a password</p>
-        <p id="status-text" class="status-text">Your password is analyzed in this browser. The breach check is optional and uses a partial hash only.</p>
+        <p class="field-label">فحص التسريبات</p>
+        <p id="breach-value" class="breach-value">بانتظار الإدخال</p>
       </div>
+      <span id="strength-badge" class="strength-badge neutral">—</span>
     </section>
 
-    <section class="suggestions-section" aria-labelledby="suggestions-title">
-      <div class="section-row"><p id="suggestions-title" class="section-label">NEXT MOVES</p><span id="suggestion-count" class="count-pill">0</span></div>
-      <ul id="suggestions-list" class="suggestions-list"><li class="empty-suggestion">Suggestions will appear as you type.</li></ul>
+    <section class="generator-card" aria-labelledby="generator-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">بدون تخمين</p>
+          <h3 id="generator-title">ولّد كلمة مرور قوية</h3>
+        </div>
+        <span class="sparkle" aria-hidden="true">✦</span>
+      </div>
+      <p class="section-help">تُنشأ داخل المتصفح ولا يتم حفظها أو إرسالها.</p>
+      <div class="generator-output-row">
+        <output id="generated-password" class="generated-password" aria-live="polite">اضغط «توليد»</output>
+        <button id="copy-generated" class="small-button" type="button" aria-label="نسخ كلمة المرور المولدة" disabled>نسخ</button>
+      </div>
+      <div class="generator-actions">
+        <button id="generate-password" class="primary-button" type="button">توليد كلمة مرور</button>
+        <button id="use-generated" class="secondary-button" type="button" disabled>فحصها</button>
+      </div>
+      <p id="copy-feedback" class="copy-feedback" aria-live="polite"></p>
     </section>
+
+    <section class="suggestions-card" aria-labelledby="suggestions-title">
+      <div class="section-heading compact-heading">
+        <h3 id="suggestions-title">اقتراحات لتحسينها</h3>
+        <span id="suggestion-count" class="count-pill">0</span>
+      </div>
+      <ul id="suggestions-list" class="suggestions-list">
+        <li class="empty-suggestion">ستظهر الاقتراحات بعد كتابة كلمة المرور.</li>
+      </ul>
+    </section>
+
+    <details class="details-card">
+      <summary>تفاصيل تقنية اختيارية</summary>
+      <div class="details-grid">
+        <span>قوة تقديرية</span><strong><span id="entropy-value">0.0</span> بت</strong>
+        <span>حجم مجموعة الأحرف</span><strong><span id="pool-value">0</span> رمز</strong>
+      </div>
+      <p>هذه أرقام تقديرية وليست ضمانًا. الأفضل استخدام كلمة فريدة ومدير كلمات مرور وتفعيل المصادقة الثنائية.</p>
+    </details>
 
     <footer class="footer">
-      <span>Built by <strong>Firas</strong></span>
+      <span>صنعه <strong>Firas</strong></span>
       <span class="footer-separator">•</span>
-      <span>Passwords never leave this browser</span>
+      <span>كلمات المرور لا تُحفظ</span>
     </footer>
   </main>
   <script src="../entropy.js"></script>

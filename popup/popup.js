@@ -4,31 +4,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("password-input");
   const toggleButton = document.getElementById("toggle-password");
   const entropyValue = document.getElementById("entropy-value");
-  const strengthBadge = document.getElementById("strength-badge");
-  const progressBar = document.getElementById("progress-bar");
-  const lengthLabel = document.getElementById("length-label");
   const poolValue = document.getElementById("pool-value");
+  const lengthLabel = document.getElementById("length-label");
+  const resultCard = document.getElementById("result-card");
+  const resultIcon = document.getElementById("result-icon");
+  const resultTitle = document.getElementById("result-title");
+  const resultDescription = document.getElementById("result-description");
+  const strengthBadge = document.getElementById("strength-badge");
   const breachIcon = document.getElementById("breach-icon");
   const breachValue = document.getElementById("breach-value");
-  const statusCard = document.getElementById("status-card");
-  const statusIcon = document.getElementById("status-icon");
-  const statusTitle = document.getElementById("status-title");
-  const statusText = document.getElementById("status-text");
   const suggestionsList = document.getElementById("suggestions-list");
   const suggestionCount = document.getElementById("suggestion-count");
+  const generateButton = document.getElementById("generate-password");
+  const generatedOutput = document.getElementById("generated-password");
+  const copyGeneratedButton = document.getElementById("copy-generated");
+  const useGeneratedButton = document.getElementById("use-generated");
+  const copyFeedback = document.getElementById("copy-feedback");
 
   let breachRequestId = 0;
   let breachTimer = 0;
   let currentBand = "neutral";
+  let generatedPassword = "";
 
   function setClasses(element, ...classes) {
     element.className = classes.filter(Boolean).join(" ");
-  }
-
-  function resetBreachStatus() {
-    setClasses(breachIcon, "metric-icon", "purple");
-    breachIcon.textContent = "◇";
-    breachValue.textContent = "Not checked";
   }
 
   function renderSuggestions(suggestions) {
@@ -38,11 +37,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (safeSuggestions.length === 0) {
       const item = document.createElement("li");
       item.className = "empty-suggestion";
-      item.textContent = "No additional actions for this local estimate.";
+      item.textContent = "لا توجد اقتراحات إضافية لهذا الفحص.";
       suggestionsList.appendChild(item);
       return;
     }
-    safeSuggestions.slice(0, 4).forEach((suggestion) => {
+    safeSuggestions.slice(0, 5).forEach((suggestion) => {
       const item = document.createElement("li");
       item.textContent = suggestion;
       suggestionsList.appendChild(item);
@@ -53,16 +52,16 @@ document.addEventListener("DOMContentLoaded", () => {
     currentBand = "neutral";
     entropyValue.textContent = "0.0";
     poolValue.textContent = "0";
-    lengthLabel.textContent = "0 characters";
-    progressBar.style.width = "0%";
-    progressBar.style.background = "var(--cyan)";
+    lengthLabel.textContent = "لم تكتب شيئًا بعد";
+    setClasses(resultCard, "result-card", "neutral");
+    resultIcon.textContent = "؟";
+    resultTitle.textContent = "ابدأ بكتابة كلمة المرور";
+    resultDescription.textContent = "لن نرسل كلمة المرور نفسها. سيظهر هنا قرار واضح ومختصر.";
     setClasses(strengthBadge, "strength-badge", "neutral");
-    strengthBadge.textContent = "Waiting";
-    setClasses(statusCard, "status-card", "neutral");
-    statusIcon.textContent = "i";
-    statusTitle.textContent = "Start with a password";
-    statusText.textContent = "Your password is analyzed in this browser. The breach check is optional and uses a partial hash only.";
-    resetBreachStatus();
+    strengthBadge.textContent = "—";
+    breachIcon.className = "breach-symbol";
+    breachIcon.textContent = "◇";
+    breachValue.textContent = "بانتظار الإدخال";
     renderSuggestions([]);
   }
 
@@ -70,52 +69,54 @@ document.addEventListener("DOMContentLoaded", () => {
     currentBand = result.band.id;
     entropyValue.textContent = result.entropyBits.toFixed(1);
     poolValue.textContent = String(result.poolSize);
-    lengthLabel.textContent = `${result.length} ${result.length === 1 ? "character" : "characters"}`;
-    progressBar.style.width = `${result.progressPercent}%`;
-    progressBar.style.background = `var(--${result.band.color})`;
+    lengthLabel.textContent = `${result.length} ${result.length === 1 ? "حرف" : "أحرف"}`;
+    setClasses(resultCard, "result-card", result.band.id);
+    resultIcon.textContent = result.band.id === "strong" ? "✓" : result.band.id === "moderate" ? "!" : "×";
+    resultTitle.textContent = `كلمة المرور ${result.band.labelAr}`;
+    resultDescription.textContent = result.band.adviceAr;
     setClasses(strengthBadge, "strength-badge", result.band.id);
-    strengthBadge.textContent = result.band.label;
-    setClasses(statusCard, "status-card", result.band.id);
-    statusIcon.textContent = result.band.id === "strong" ? "✓" : result.band.id === "moderate" ? "!" : "×";
-    statusTitle.textContent = result.band.id === "strong" ? "Good local estimate" : `${result.band.label} password`; 
-    statusText.textContent = result.band.advice;
-    resetBreachStatus();
-    renderSuggestions(result.suggestions);
-  }
-
-  function renderBreachChecking() {
-    setClasses(breachIcon, "metric-icon", "cyan");
-    breachIcon.textContent = "…";
-    breachValue.textContent = "Checking…";
+    strengthBadge.textContent = result.band.labelAr;
+    breachIcon.className = "breach-symbol";
+    breachIcon.textContent = "◇";
+    breachValue.textContent = "جارٍ الفحص…";
+    renderSuggestions(result.suggestionsAr);
   }
 
   function renderBreachResult(result) {
     if (result.status === "leaked") {
-      setClasses(breachIcon, "metric-icon", "purple");
+      breachIcon.className = "breach-symbol leaked";
       breachIcon.textContent = "!";
-      breachValue.textContent = `${result.count.toLocaleString()} hits`;
-      setClasses(statusCard, "status-card", "leaked");
-      statusIcon.textContent = "!";
-      statusTitle.textContent = "Do not use this password";
-      statusText.textContent = "This exact password appears in known breach data. Change it anywhere it was reused.";
+      breachValue.textContent = `ظهرت ${result.count.toLocaleString("ar-EG")} مرة`;
+      setClasses(resultCard, "result-card", "leaked");
+      resultIcon.textContent = "!";
+      resultTitle.textContent = "لا تستخدمها — ظهرت في تسريب";
+      resultDescription.textContent = "غيّرها فورًا في كل حساب استخدمتها فيه، ولا تعِد استخدامها.";
       return;
     }
     if (result.status === "clean") {
-      setClasses(breachIcon, "metric-icon", "cyan");
+      breachIcon.className = "breach-symbol clean";
       breachIcon.textContent = "✓";
-      breachValue.textContent = "Clean result";
-      const cleanClass = currentBand === "strong" ? "clean" : currentBand;
-      setClasses(statusCard, "status-card", cleanClass);
-      statusIcon.textContent = currentBand === "strong" ? "✓" : "!";
-      statusTitle.textContent = currentBand === "strong" ? "Not found in known breaches" : "Not breached, but improve it";
-      statusText.textContent = currentBand === "strong"
-        ? "This is not proof of safety, but the queried password was not returned by the breach corpus."
-        : `The queried password was not returned by the breach corpus, but its local estimate is ${currentBand}.`;
+      breachValue.textContent = "لم تظهر في التسريبات المعروفة";
+      const cardState = currentBand === "strong" ? "clean" : currentBand;
+      setClasses(resultCard, "result-card", cardState);
+      resultIcon.textContent = currentBand === "strong" ? "✓" : "!";
+      resultTitle.textContent = currentBand === "strong" ? "ممتاز — لم تظهر في التسريبات" : "لم تظهر في التسريبات، لكنها تحتاج تحسينًا";
+      resultDescription.textContent = currentBand === "strong"
+        ? "هذه إشارة جيدة، لكنها ليست ضمانًا كاملًا. اجعلها فريدة دائمًا."
+        : "لم نجدها في قاعدة التسريبات المفحوصة، لكن زِد طولها وتنوعها قبل الاعتماد عليها.";
       return;
     }
-    setClasses(breachIcon, "metric-icon", "purple");
+    renderBreachError();
+  }
+
+  function renderBreachError() {
+    breachIcon.className = "breach-symbol";
     breachIcon.textContent = "◇";
-    breachValue.textContent = "Not checked";
+    breachValue.textContent = "تعذر الاتصال بالخدمة";
+    setClasses(resultCard, "result-card", "error");
+    resultIcon.textContent = "!";
+    resultTitle.textContent = `تحليل القوة: ${currentBand === "strong" ? "قوية" : currentBand === "moderate" ? "متوسطة" : "ضعيفة"}`;
+    resultDescription.textContent = "تعذر فحص التسريبات الآن. لم نعتبرها نظيفة، ويمكنك المحاولة مرة أخرى لاحقًا.";
   }
 
   function requestBreachCheck(password) {
@@ -126,19 +127,29 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     breachTimer = window.setTimeout(() => {
-      renderBreachChecking();
+      breachIcon.className = "breach-symbol";
+      breachIcon.textContent = "…";
+      breachValue.textContent = "جارٍ فحص التسريبات…";
       chrome.runtime.sendMessage({ type: "PASSBIT_CHECK_BREACH", password }, (response) => {
         if (requestId !== breachRequestId) return;
         if (chrome.runtime.lastError || !response || !response.ok) {
-          setClasses(breachIcon, "metric-icon", "purple");
-          breachIcon.textContent = "◇";
-          breachValue.textContent = "Unavailable";
-          statusText.textContent = "Local entropy is ready. The breach service could not be reached, so no breach claim is made.";
+          renderBreachError();
           return;
         }
         renderBreachResult(response);
       });
     }, 280);
+  }
+
+  async function copyGeneratedPassword() {
+    if (!generatedPassword) return;
+    try {
+      await navigator.clipboard.writeText(generatedPassword);
+      copyFeedback.textContent = "تم النسخ إلى الحافظة.";
+      window.setTimeout(() => { copyFeedback.textContent = ""; }, 2500);
+    } catch (error) {
+      copyFeedback.textContent = "تعذر النسخ؛ حدّد النص يدويًا.";
+    }
   }
 
   passwordInput.addEventListener("input", () => {
@@ -153,11 +164,29 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   toggleButton.addEventListener("click", () => {
-    const shouldShow = passwordInput.type === "password";
-    passwordInput.type = shouldShow ? "text" : "password";
-    toggleButton.textContent = shouldShow ? "HIDE" : "SHOW";
-    toggleButton.setAttribute("aria-label", shouldShow ? "Hide password" : "Show password");
-    toggleButton.setAttribute("aria-pressed", String(shouldShow));
+    const showPassword = passwordInput.type === "password";
+    passwordInput.type = showPassword ? "text" : "password";
+    toggleButton.textContent = showPassword ? "إخفاء" : "إظهار";
+    toggleButton.setAttribute("aria-label", showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
+    toggleButton.setAttribute("aria-pressed", String(showPassword));
+  });
+
+  generateButton.addEventListener("click", () => {
+    generatedPassword = globalThis.PassBitEntropy.generateStrongPassword();
+    generatedOutput.textContent = generatedPassword;
+    copyGeneratedButton.disabled = false;
+    useGeneratedButton.disabled = false;
+    copyFeedback.textContent = "تم التوليد داخل المتصفح.";
+    window.setTimeout(() => { copyFeedback.textContent = ""; }, 2500);
+  });
+
+  copyGeneratedButton.addEventListener("click", copyGeneratedPassword);
+
+  useGeneratedButton.addEventListener("click", () => {
+    if (!generatedPassword) return;
+    passwordInput.value = generatedPassword;
+    passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
+    passwordInput.focus();
   });
 
   renderEmpty();
