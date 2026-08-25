@@ -1,6 +1,6 @@
 # PassBit
 
-**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version **1.3.1** adds a compact modern Arabic interface, a cryptographically random local password generator, actionable improvement suggestions, a double-click quick-scan chip beside password fields, a new lock-shield logo, and an opt-in encrypted local favorites vault. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
+**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version 1.5.0 adds a compact modern Arabic interface, a cryptographically random local password generator, actionable improvement suggestions, a double-click quick-scan chip beside password fields, a new lock-shield logo, and an opt-in encrypted local favorites vault. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
 
 > PassBit is a defensive decision aid. A clean breach response does not prove that a password is safe, and entropy is an estimate rather than a guarantee.
 
@@ -8,9 +8,9 @@
 
 The extension package contains `manifest.json` for the MV3 declaration, `entropy.js` for local character-pool, entropy, and generator logic, `vault.js` for PBKDF2/AES-GCM encrypted favorites, `service-worker.js` for local SHA-1 hashing and the range request, `content.js` for password-field integration and the double-click quick-scan chip, and `popup/` for the Arabic user interface, generator, suggestions, and vault controls. The `icons/` directory contains the generated brand icons. `SPECIFICATION.md` contains the full technical design and security model.
 
-## Version 1.3.1 user flow
+## Version 1.5.0 user flow
 
-The popup is intentionally short. It contains one password field, two live measurements for length and character diversity, one dynamic score derived from the calculated entropy, and one breach-status line. Use **توليد كلمة قوية** only when you want a generated alternative; it opens a small inline generator instead of adding another permanent card. The lock icon opens the optional encrypted favorites vault.
+The popup is intentionally short and explicit. Step 1 is the password field. The two tiles show the actual length and character diversity. Step 2 is the calculated strength score, followed by the breach-status row. The generator is a clearly labeled control with an explanation under its name: **توليد كلمة مرور قوية** opens it, **توليد أخرى** makes a fresh value, **نسخ** copies it, and **استخدمها للفحص** places it into the analyzer. The top-right button is labeled **المفضلة** and opens the optional encrypted favorites vault.
 
 On a regular website, double-click a password field. PassBit shows a small **PB · فحص** action beside the field; click it to open the inline scan panel and see the strength, breach result, and suggestions. Chrome does not provide a reliable way for a content script to force the browser toolbar popup open from a page event, so the inline action is the supported equivalent. The toolbar icon remains available for the full popup.
 

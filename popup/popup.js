@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tipLine = document.getElementById("tip-line");
   const generatorPanel = document.getElementById("generator-panel");
   const generateButton = document.getElementById("generate-password");
+  const regenerateButton = document.getElementById("regenerate-generated");
   const generatedOutput = document.getElementById("generated-password");
   const copyGeneratedButton = document.getElementById("copy-generated");
   const useGeneratedButton = document.getElementById("use-generated");
@@ -57,6 +58,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setSaveButtonEnabled(enabled) {
     if (saveFavoriteButton) saveFavoriteButton.disabled = !enabled;
+  }
+
+  function createGeneratedPassword() {
+    generatedPassword = globalThis.PassBitEntropy.generateStrongPassword();
+    generatedOutput.textContent = generatedPassword;
+    copyGeneratedButton.disabled = false;
+    useGeneratedButton.disabled = false;
+    copyFeedback.textContent = "تم توليد كلمة جديدة.";
   }
 
   function updateScore(value) {
@@ -359,15 +368,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   openVaultButton.addEventListener("click", () => showView("vault"));
   closeVaultButton.addEventListener("click", () => showView("check"));
+  generateButton.setAttribute("aria-expanded", "false");
   generateButton.addEventListener("click", () => {
-    if (!generatedPassword) {
-      generatedPassword = globalThis.PassBitEntropy.generateStrongPassword();
-      generatedOutput.textContent = generatedPassword;
-      copyGeneratedButton.disabled = false;
-      useGeneratedButton.disabled = false;
-    }
-    generatorPanel.hidden = !generatorPanel.hidden;
-    generateButton.textContent = generatorPanel.hidden ? "توليد كلمة قوية" : "إخفاء المولّد";
+    const opening = generatorPanel.hidden;
+    if (opening && !generatedPassword) createGeneratedPassword();
+    generatorPanel.hidden = !opening;
+    generateButton.setAttribute("aria-expanded", String(opening));
+    generateButton.querySelector("strong").textContent = opening ? "إخفاء المولّد" : "توليد كلمة مرور قوية";
+  });
+  regenerateButton.addEventListener("click", () => {
+    createGeneratedPassword();
+    generatorPanel.hidden = false;
+    generateButton.setAttribute("aria-expanded", "true");
   });
   copyGeneratedButton.addEventListener("click", () => copyText(generatedPassword, copyFeedback));
   useGeneratedButton.addEventListener("click", () => {
