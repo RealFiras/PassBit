@@ -1,13 +1,13 @@
 # PassBit — Zero-Knowledge Entropy & Breach Detector
 
-**Version:** 1.7.0
+**Version:** 1.8.0
 **Author:** Firas — Cybersecurity Student & Web Security Researcher  
 **Platform:** Google Chrome Extension, Manifest V3  
 **Document status:** Production-oriented implementation specification
 
 ## Scope and design intent
 
-PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.7.0 adds a compact modern Arabic popup, live length and character-diversity measurements, a direct entropy-derived score ring, a new lock-shield logo, an opt-in PBKDF2/AES-GCM vault, and a double-click quick-scan chip beside page password fields. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
+PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.8.0 adds deeper local pattern analysis, specific improvement guidance, clearer HIBP network states with retry, a customizable random-password and passphrase generator, organized vault search and sorting, encrypted-envelope import/export, configurable vault auto-lock, and a richer inline quick-scan panel. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
 
 The security boundary is explicit. Entropy is a mathematical estimate based on an assumed character pool; it is not a proof that a password is random. The breach result is a corpus lookup; a clean response does not prove that a password has never been exposed elsewhere. The UI uses this language so that users are not given false certainty.
 
@@ -15,9 +15,9 @@ The security boundary is explicit. Entropy is a mathematical estimate based on a
 
 ### 1.1 Product identity
 
-PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.1.0**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
+PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.8.0**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
 
-The core value proposition is a zero-cost, privacy-first Chrome Extension that provides an immediate password-strength estimate and breach exposure signal directly inside the browser. The extension does not require an account, does not store passwords, and does not add analytics or telemetry. The only outbound request is the privacy-preserving range request needed for the optional breach check.
+The core value proposition is a zero-cost, privacy-first Chrome Extension that provides an immediate password-strength estimate, explainable local warnings, and a breach exposure signal directly inside the browser. The extension does not require an account, does not store passwords by default, and does not add analytics or telemetry; an explicitly saved favorite is stored only as authenticated ciphertext. The only outbound request is the privacy-preserving range request needed for the optional breach check.
 
 ### 1.2 Brand direction
 
@@ -44,7 +44,7 @@ PassBit follows five product principles. First, an unsaved password remains in m
 
 PassBit uses the standard character-pool estimate `E = L × log2(R)`, where `E` is estimated entropy in bits, `L` is password length measured as Unicode code points, and `R` is the estimated size of the active character pool. The formula assumes each character is independently selected with uniform probability from the active pool. Human-created passwords rarely meet those assumptions, so PassBit labels the value **estimated entropy**.
 
-The implementation evaluates four character groups. Lowercase Latin letters contribute 26 possible characters when at least one lowercase letter is present. Uppercase Latin letters contribute 26 when present. Decimal digits contribute 10 when present. Symbols and punctuation contribute an operational estimate of 33 when at least one non-alphanumeric character is present. The active pool is the sum of the groups detected in the password, not the number of distinct characters the user happened to type.
+The implementation evaluates four character groups and subtracts transparent, bounded penalties when local heuristics identify patterns that are easier to guess than the idealized pool formula suggests. Lowercase Latin letters contribute 26 possible characters when at least one lowercase letter is present. Uppercase Latin letters contribute 26 when present. Decimal digits contribute 10 when present. Symbols and punctuation contribute an operational estimate of 33 when at least one non-alphanumeric character is present. The active pool is the sum of the groups detected in the password, not the number of distinct characters the user happened to type.
 
 | Detection | Pool contribution | Example trigger |
 | --- | ---: | --- |
@@ -59,7 +59,7 @@ The displayed bands are intentionally conservative product guidance rather than 
 
 ### 2.2 Local heuristics
 
-Entropy alone cannot detect the fact that a user typed a common password, a repeated character, a keyboard walk, or a predictable sequence. PassBit therefore adds lightweight local heuristics. The current implementation flags a small built-in set of common passwords, repeated-character values, and a few obvious sequence prefixes. These heuristics never leave the browser and are supplementary; they do not replace a password manager's generator or a proper password-strength estimator trained on password datasets.
+Entropy alone cannot detect the fact that a user typed a common password, a predictable substitution, a repeated character or chunk, a keyboard walk, a sequence, a year/date, a phone-like number, or a word tied to the current site or field. PassBit therefore adds lightweight local heuristics for those patterns and exposes the findings and suggestions to the user. The effective estimate is `max(0, entropyBits - patternPenaltyBits)`; the raw estimate remains available for transparency. These heuristics never leave the browser and are supplementary; they do not replace a password manager's generator or a proper password-strength estimator trained on password datasets.
 
 The engine counts Unicode code points for length so that a non-ASCII symbol is not accidentally counted as two JavaScript UTF-16 code units. Character-pool classification remains intentionally narrow and transparent: Latin case, decimal digits, and a broad “symbol” fallback. This makes the estimate auditable but means that the result should be interpreted carefully for non-Latin scripts.
 
@@ -97,7 +97,7 @@ Only this envelope is written to `chrome.storage.local`. The master passphrase i
 
 ### 2.5 Result interpretation
 
-A **Leaked** result means the exact SHA-1 hash suffix matched a record returned for the queried prefix. The count is the corpus's occurrence count; it is not a count of unique websites, people, or current account compromises. A **Clean result** means no matching suffix was returned by that corpus at query time. A network error means the extension does not make a breach claim.
+A **Leaked** result means the exact SHA-1 hash suffix matched a record returned for the queried prefix. The count is the corpus's occurrence count; it is not a count of unique websites, people, or current account compromises. A **Clean result** means no matching suffix was returned by that corpus at query time. A network error, timeout, rate limit, unavailable service, or invalid response means the extension does not make a breach claim; the UI offers an explicit retry instead of labeling the value clean.
 
 ## Section 3: Architecture & File Structure
 
@@ -106,40 +106,40 @@ Manifest V3 replaces persistent background pages with event-driven service worke
 | Component | Responsibility | Trust boundary |
 | --- | --- | --- |
 | `manifest.json` | Declares MV3, metadata, popup, service worker, content scripts, icons, minimum Chrome version, API host permission, and the `storage` permission. | Browser extension policy. |
-| `entropy.js` | Calculates local character sets, pool size, entropy bits, bands, progress percentage, local suggestions, and cryptographically random generator output. | Runs in popup and content-script isolated worlds; no network code. |
-| `vault.js` | Derives keys with PBKDF2, encrypts/decrypts favorite records with AES-GCM, and exposes storage-envelope operations without persisting plaintext. | Extension popup only; the master passphrase remains in memory. |
+| `entropy.js` | Calculates local character sets, raw/effective entropy, pattern penalties, explainable findings, suggestions, cryptographically random passwords, and random passphrases. | Runs in popup and content-script isolated worlds; no network code. |
+| `vault.js` | Derives keys with PBKDF2, encrypts/decrypts favorite records with AES-GCM, validates encrypted envelopes, and exposes import/export storage operations without persisting plaintext. | Extension popup only; the master passphrase remains in memory. |
 | `service-worker.js` | Receives a password only from the extension contexts, hashes it locally, queries the range API, performs suffix matching, and returns a minimal result. | Extension background context and API boundary. |
 | `content.js` | Detects password inputs, responds to a double-click with a small PB quick-scan action, opens an inline scan panel, applies red/yellow/cyan/green visual states, and shows Arabic suggestions. | Page-facing isolated content-script context. |
 | `popup/index.html` | Defines the Arabic RTL popup, plain-language result card, generator controls, suggestions, optional technical details, and creator credit. | Extension UI document. |
 | `popup/popup.css` | Implements dark glassmorphism, responsive spacing, color states, focus treatment, and reduced-motion support. | Local static styling only. |
-| `popup/popup.js` | Connects Arabic input, show/hide controls, generator, copy/use actions, suggestions, tab switching, and vault setup/unlock/lock/save/delete flows. | UI controller; no direct API call. |
+| `popup/popup.js` | Connects Arabic input, show/hide controls, generator modes/options, copy/use actions, suggestions, retry states, vault setup/unlock/lock/save/delete flows, search/sort, auto-lock, and encrypted-envelope transfer. | UI controller; no direct API call. |
 | `icons/icon16.png` through `icon128.png` | Provides toolbar and extension-management identity. | Static package assets. |
 | `README.md` | Provides installation, privacy, testing, and GitHub publication guidance. | Public project documentation. |
 
 The event listener in the service worker is registered at top level. The message handler returns a pending response while the asynchronous fetch completes, then returns only `ok`, `status`, `count`, and `queried` fields. Vault storage is handled by the popup through `vault.js`; the service worker does not write vault data.
 
-The popup uses an input debounce so that a keystroke does not immediately create a request. A monotonically increasing request identifier prevents a slower response for an old value from overwriting a newer UI state. The show/hide control changes only the local input type. The generator uses `crypto.getRandomValues`, forces at least one character from each configured group, shuffles the result with the same random source, and keeps the value in memory until the user copies it or sends it to the analyzer.
+The popup uses an input debounce so that a keystroke does not immediately create a request. A monotonically increasing request identifier prevents a slower response for an old value from overwriting a newer UI state. The show/hide control changes only the local input type. The generator uses `crypto.getRandomValues`, forces at least one character from each configured group for random-password mode, shuffles the result with the same random source, and keeps the value in memory until the user copies it or sends it to the analyzer. Passphrase mode selects words from a local list using the same cryptographic random source and supports 3–8 words with a small allowlisted separator set.
 
-The content script uses a `WeakMap` for per-field UI state and a bounded set only for repositioning visible controls during scrolling. A `MutationObserver` handles forms rendered after initial page load. The observer tracks password inputs and password-like autocomplete fields, but it does not scan arbitrary text inputs or read page text. A double-click shows a small `PB · فحص` action beside the field; the user clicks that action to open the inline scan panel. Each field receives only a short-lived state marker and panel. Chrome does not provide a reliable content-script path for forcing the toolbar popup open from a page event, so the inline action is the supported equivalent; the toolbar icon remains available for the full popup.[6] [7]
+The content script uses a `WeakMap` for per-field UI state and a bounded set only for repositioning visible controls during scrolling. A `MutationObserver` handles forms rendered after initial page load. The observer tracks password inputs and password-like autocomplete fields, but it does not scan arbitrary text inputs or read page text. A double-click shows a small `PB · فحص` action beside the field; the user clicks that action to open the inline scan panel. Each field receives only a short-lived state marker and panel. The panel shows local findings, suggestions, effective estimated bits, and an explicit retry control when the breach check is unavailable. Chrome does not provide a reliable content-script path for forcing the toolbar popup open from a page event, so the inline action is the supported equivalent; the toolbar icon remains available for the full popup.[6] [7]
 
 ## Section 4: Interface & User Experience Specifications
 
 ### 4.1 Popup interface
 
-The popup is a compact Arabic RTL security panel with a dark background, lock-shield logo, one password field, two live measurement tiles, one direct score ring adjusted by explainable local pattern checks, one breach-status row, and a collapsed `لماذا ظهرت هذه النتيجة؟` explanation section. The local checks cover common passwords, repeated characters or chunks, sequences, keyboard walks, date-like values, predictable substitutions, and page-context words. The generator is a labeled expandable panel with explicit actions: generate, generate another, copy, or use for analysis. The optional encrypted favorites vault opens as a separate view so it does not crowd the main check. The main screen avoids ambiguous icons and technical paragraphs.
+The popup is a compact Arabic RTL security panel with a dark background, lock-shield logo, one password field, two live measurement tiles, one score ring adjusted by explainable local pattern checks, one breach-status row with retry, and a collapsed `لماذا ظهرت هذه النتيجة؟` explanation section. The generator supports a customizable random-password mode and a 3–8 word passphrase mode with explicit generate, copy, and use-for-analysis actions. The optional encrypted favorites vault opens as a separate view with search, sorting, auto-lock selection, encrypted-envelope import/export, and delete controls. The main screen avoids ambiguous icons and technical paragraphs.
 
 | UI region | Behavior | Accessibility expectation |
 | --- | --- | --- |
-| Header | Shows PassBit, version 1.7.0, and the lock-shield logo. | Brand text remains available independently of the icon. |
+| Header | Shows PassBit, version 1.8.0, and the lock-shield logo. | Brand text remains available independently of the icon. |
 | Password input | Accepts a value locally and updates length, character diversity, score, advice, and breach status after each input event. | Visible label, autocomplete hint, focus ring, and password type by default. |
 | Show/HIDE control | Toggles visibility only while the popup remains open. | Button label and `aria-pressed` state change together. |
 | Live measurements | Shows actual Unicode length and the number of active character groups out of four. | The values are text, not color-only indicators. |
-| Dynamic score | Shows a 0–100 normalized display based directly on the calculated entropy estimate. | The result label and explanation remain visible beside the ring. |
+| Dynamic score | Shows a 0–100 normalized display based on effective estimated entropy after transparent local pattern penalties, while the details expose the reason. | The result label, local estimate wording, and explanation remain visible beside the ring. |
 | Main result | Shows Arabic Weak, Moderate, or Strong guidance in plain language. | The action text is visible and not color-only. |
-| Breach status | Shows checking, clean result, hit count, or unavailable. | Status updates are written into a live region. |
-| Generator | Creates a 20-character strong candidate locally. | The generated value is visible in a selectable output with copy/use controls. |
+| Breach status | Shows checking, clean result, hit count, timeout/network/rate-limit/unavailable states, and a retry action. | Status updates are written into a live region and unavailable is never presented as clean. |
+| Generator | Creates a customizable random password or 3–8 word passphrase locally using cryptographic randomness. | Mode, length/word count, separator, output, and copy/use controls are explicit. |
 | Suggestions | Lists Arabic, locally derived improvement suggestions. | Native list semantics and readable contrast. |
-| Favorites tab | Creates, unlocks, locks, and deletes the opt-in encrypted local vault. | The master passphrase is required and there is no recovery path. |
+| Favorites tab | Creates, unlocks, locks, searches, sorts, imports, exports, and deletes the opt-in encrypted local vault; auto-lock is configurable per popup session. | The master passphrase is required, imported envelopes are authenticated before storage, and there is no recovery path. |
 | Technical details | The main quick-check view avoids technical numbers; vault warnings remain visible. | Advanced data is optional rather than blocking the main decision. |
 | Footer | Credits Firas and states the local-analysis boundary. | Plain text, not an image-only disclosure. |
 

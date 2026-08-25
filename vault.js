@@ -1,5 +1,5 @@
 /*
- * PassBit v1.2.0 — encrypted local favorites vault
+ * PassBit v1.8.0 — encrypted local favorites vault
  * The storage envelope contains ciphertext only. The master passphrase stays in memory.
  */
 (function (root) {
@@ -32,28 +32,16 @@
   }
 
   function base64ToBytes(value) {
+    if (typeof value !== "string" || !value || value.length % 4 !== 0) throw new Error("INVALID_BASE64");
     const binary = atob(value);
     return Uint8Array.from(binary, (character) => character.charCodeAt(0));
   }
 
   async function deriveKey(passphrase, salt) {
-    if (typeof passphrase !== "string" || passphrase.length < 12) {
-      throw new Error("MASTER_PASSPHRASE_TOO_SHORT");
-    }
-    const material = await root.crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(passphrase),
-      "PBKDF2",
-      false,
-      ["deriveKey"],
-    );
+    if (typeof passphrase !== "string" || passphrase.length < 12) throw new Error("MASTER_PASSPHRASE_TOO_SHORT");
+    const material = await root.crypto.subtle.importKey("raw", new TextEncoder().encode(passphrase), "PBKDF2", false, ["deriveKey"]);
     return root.crypto.subtle.deriveKey(
-      {
-        name: "PBKDF2",
-        salt,
-        iterations: PBKDF2_ITERATIONS,
-        hash: "SHA-256",
-      },
+      { name: "PBKDF2", salt, iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
       material,
       { name: "AES-GCM", length: KEY_BYTES },
       false,
@@ -77,10 +65,7 @@
   }
 
   function normalizeRecords(records) {
-    return (Array.isArray(records) ? records : [])
-      .slice(0, MAX_RECORDS)
-      .map(normalizeRecord)
-      .filter(Boolean);
+    return (Array.isArray(records) ? records : []).slice(0, MAX_RECORDS).map(normalizeRecord).filter(Boolean);
   }
 
   async function encryptRecords(passphrase, records) {
@@ -101,19 +86,27 @@
     };
   }
 
-  async function decryptRecords(passphrase, envelope) {
-    if (!envelope || envelope.version !== VAULT_VERSION || typeof envelope.ciphertext !== "string") {
-      throw new Error("INVALID_VAULT");
+  function validateEnvelope(envelope) {
+    if (!envelope || typeof envelope !== "object" || envelope.version !== VAULT_VERSION) return false;
+    if (!envelope.kdf || envelope.kdf.name !== "PBKDF2" || envelope.kdf.hash !== "SHA-256" || envelope.kdf.iterations !== PBKDF2_ITERATIONS) return false;
+    if (!envelope.cipher || envelope.cipher.name !== "AES-GCM" || envelope.cipher.tagLength !== 128) return false;
+    try {
+      if (base64ToBytes(envelope.salt).length !== SALT_BYTES) return false;
+      if (base64ToBytes(envelope.iv).length !== IV_BYTES) return false;
+      if (base64ToBytes(envelope.ciphertext).length < 16) return false;
+    } catch (error) {
+      return false;
     }
+    return true;
+  }
+
+  async function decryptRecords(passphrase, envelope) {
+    if (!validateEnvelope(envelope)) throw new Error("INVALID_VAULT");
     try {
       const salt = base64ToBytes(envelope.salt);
       const iv = base64ToBytes(envelope.iv);
       const key = await deriveKey(passphrase, salt);
-      const plaintext = await root.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv, tagLength: 128 },
-        key,
-        base64ToBytes(envelope.ciphertext),
-      );
+      const plaintext = await root.crypto.subtle.decrypt({ name: "AES-GCM", iv, tagLength: 128 }, key, base64ToBytes(envelope.ciphertext));
       const parsed = JSON.parse(new TextDecoder().decode(plaintext));
       return normalizeRecords(parsed.favorites);
     } catch (error) {
@@ -134,6 +127,12 @@
     return envelope;
   }
 
+  async function saveEnvelope(envelope) {
+    if (!validateEnvelope(envelope)) throw new Error("INVALID_VAULT");
+    await chrome.storage.local.set({ [STORAGE_KEY]: envelope });
+    return envelope;
+  }
+
   async function deleteVault() {
     await chrome.storage.local.remove(STORAGE_KEY);
   }
@@ -146,12 +145,12 @@
     decryptRecords,
     readEnvelope,
     saveRecords,
+    saveEnvelope,
+    validateEnvelope,
     deleteVault,
     normalizeRecords,
     createId,
   });
 })(typeof globalThis !== "undefined" ? globalThis : window);
 
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = globalThis.PassBitVault;
-}
+if (typeof module !== "undefined" && module.exports) module.exports = globalThis.PassBitVault;

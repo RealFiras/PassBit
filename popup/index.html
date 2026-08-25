@@ -34,26 +34,45 @@
       <section id="result-card" class="result-card neutral" aria-live="polite">
         <div class="step-number result-step">2</div>
         <div id="score-ring" class="score-ring" style="--score: 0deg"><div class="score-inner"><strong id="score-value">0</strong><small>/100</small></div></div>
-        <div class="result-copy"><span class="eyebrow">التقييم المحسوب</span><h2 id="result-title">بانتظار كلمة المرور</h2><p id="result-description">يظهر التقييم بعد الكتابة.</p></div>
+        <div class="result-copy"><span class="eyebrow">التقييم المحسوب</span><h2 id="result-title">بانتظار كلمة المرور</h2><p id="result-description">يظهر التقييم بعد الكتابة.</p><small id="score-meta" class="score-meta">تقدير محلي محسّن</small></div>
       </section>
 
       <section class="breach-row" aria-live="polite">
         <div id="breach-icon" class="breach-icon">◇</div>
-        <div><span class="eyebrow">3. فحص التسريب</span><strong id="breach-value">لم يبدأ بعد</strong></div>
+        <div class="breach-copy"><span class="eyebrow">3. فحص التسريب</span><strong id="breach-value">لم يبدأ بعد</strong></div>
+        <button id="retry-breach" class="small-button retry-button" type="button" hidden>إعادة الفحص</button>
       </section>
 
       <p id="tip-line" class="tip-line">نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.</p>
       <details class="check-details">
         <summary>لماذا ظهرت هذه النتيجة؟</summary>
         <ul id="reason-list"><li>اكتب كلمة المرور لعرض الفحوصات.</li></ul>
-        <p>نفحص محليًا: الكلمات الشائعة، التكرار، التسلسلات، لوحة المفاتيح، التواريخ، والاستعاضة البسيطة بالرموز.</p>
+        <p>نفحص محليًا: الكلمات الشائعة، التكرار، التسلسلات، لوحة المفاتيح، التواريخ، الأرقام الواضحة، والاستعاضة البسيطة بالرموز.</p>
       </details>
 
       <section class="generator-section">
-        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true">✦</span><span><strong>توليد كلمة مرور قوية</strong><small>ينشئ كلمة عشوائية جاهزة للنسخ أو الفحص</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
+        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true">✦</span><span><strong>توليد كلمة مرور قوية</strong><small>اختر كلمة عشوائية أو عبارة مرور طويلة</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
         <section id="generator-panel" class="generator-panel" hidden aria-label="مولّد كلمات المرور">
-          <div class="generator-heading"><div><h3>الكلمة المقترحة</h3><p>اضغط «نسخ» لحفظها أو «استخدمها للفحص» لتقييمها.</p></div><button id="regenerate-generated" class="secondary-button" type="button" title="إنشاء كلمة مرور مختلفة">توليد أخرى</button></div>
-          <div class="generator-row"><code id="generated-password">—</code><button id="copy-generated" class="small-button" type="button" disabled title="نسخ كلمة المرور المقترحة">نسخ</button></div>
+          <div class="generator-heading"><div><h3>المولد المحلي</h3><p>لا يتم إرسال الناتج. عدّل الخيارات ثم ولّد قيمة جديدة.</p></div><button id="regenerate-generated" class="secondary-button" type="button" title="إنشاء قيمة مختلفة">توليد</button></div>
+          <div class="generator-modes" role="tablist" aria-label="نوع المولد">
+            <button id="mode-password" class="mode-button active" type="button" role="tab" aria-selected="true">كلمة عشوائية</button>
+            <button id="mode-passphrase" class="mode-button" type="button" role="tab" aria-selected="false">عبارة مرور</button>
+          </div>
+          <div id="password-options" class="generator-options">
+            <label for="password-length">الطول
+              <select id="password-length"><option value="16">16 حرفًا</option><option value="20" selected>20 حرفًا</option><option value="24">24 حرفًا</option><option value="32">32 حرفًا</option><option value="48">48 حرفًا</option></select>
+            </label>
+          </div>
+          <div id="passphrase-options" class="generator-options" hidden>
+            <label for="passphrase-count">عدد الكلمات
+              <select id="passphrase-count"><option value="3">3 كلمات</option><option value="4" selected>4 كلمات</option><option value="5">5 كلمات</option><option value="6">6 كلمات</option><option value="7">7 كلمات</option></select>
+            </label>
+            <label for="passphrase-separator">الفاصل
+              <select id="passphrase-separator"><option value="-" selected>شرطة —</option><option value=" ">مسافة</option><option value=".">نقطة</option><option value="_">شرطة سفلية</option></select>
+            </label>
+          </div>
+          <div class="generator-row"><code id="generated-password">—</code><button id="copy-generated" class="small-button" type="button" disabled title="نسخ الناتج">نسخ</button></div>
+          <p id="generated-type-label" class="generator-status">اختر نوع المولد.</p>
           <button id="use-generated" class="primary-button full-button" type="button" disabled>استخدمها للفحص</button>
           <p id="copy-feedback" class="feedback" aria-live="polite"></p>
         </section>
@@ -78,12 +97,14 @@
         <p id="unlock-feedback" class="feedback" aria-live="polite"></p>
       </section>
       <section id="vault-unlocked" class="vault-card" hidden>
-        <div class="vault-toolbar"><span id="vault-count">لا توجد كلمات محفوظة</span><button id="lock-vault" class="secondary-button" type="button">قفل الخزنة</button></div>
+        <div class="vault-toolbar"><span id="vault-count">لا توجد كلمات محفوظة</span><div class="vault-toolbar-actions"><label class="timeout-label" for="vault-timeout">القفل بعد <select id="vault-timeout"><option value="0">إغلاق الإضافة</option><option value="300000">5 د</option><option value="900000" selected>15 د</option><option value="1800000">30 د</option></select></label><button id="lock-vault" class="secondary-button" type="button">قفل</button></div></div>
+        <div class="vault-tools"><input id="favorite-search" type="search" placeholder="ابحث باسم الخدمة أو المستخدم" aria-label="البحث في المفضلة"><select id="favorite-sort" aria-label="ترتيب المفضلة"><option value="newest">الأحدث أولًا</option><option value="name">حسب الاسم</option></select></div>
         <div class="save-current"><p class="save-heading">حفظ كلمة الفحص الحالية</p><input id="favorite-name" type="text" maxlength="100" placeholder="اسم الخدمة، مثل: البريد"><input id="favorite-username" type="text" maxlength="150" placeholder="اسم المستخدم — اختياري"><button id="save-favorite" class="primary-button full-button" type="button" disabled>حفظ بشكل مشفّر</button><p id="save-feedback" class="feedback" aria-live="polite"></p></div>
+        <div class="vault-transfer"><button id="export-vault" class="secondary-button" type="button">تصدير مشفّر</button><button id="import-vault" class="secondary-button" type="button">استيراد مشفّر</button><input id="import-vault-file" type="file" accept="application/json,.json" hidden><p id="transfer-feedback" class="feedback" aria-live="polite"></p></div>
         <div id="favorite-list" class="favorite-list"></div>
         <button id="delete-vault" class="danger-button full-button" type="button">حذف الخزنة وكل المحفوظات</button>
       </section>
-      <p class="vault-note">الخزنة محلية ومشفّرة، وتُقفل عند إغلاق الإضافة.</p>
+      <p class="vault-note">الخزنة محلية ومشفّرة، والتصدير يحفظ الغلاف المشفّر فقط.</p>
     </section>
 
     <footer>PassBit · فحص واضح وخصوصية محلية</footer>

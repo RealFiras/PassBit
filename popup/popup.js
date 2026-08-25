@@ -14,19 +14,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultCard = document.getElementById("result-card");
   const scoreRing = document.getElementById("score-ring");
   const scoreValue = document.getElementById("score-value");
+  const scoreMeta = document.getElementById("score-meta");
   const resultTitle = document.getElementById("result-title");
   const resultDescription = document.getElementById("result-description");
   const breachIcon = document.getElementById("breach-icon");
   const breachValue = document.getElementById("breach-value");
+  const retryBreachButton = document.getElementById("retry-breach");
   const tipLine = document.getElementById("tip-line");
   const reasonList = document.getElementById("reason-list");
   const generatorPanel = document.getElementById("generator-panel");
   const generateButton = document.getElementById("generate-password");
   const regenerateButton = document.getElementById("regenerate-generated");
   const generatedOutput = document.getElementById("generated-password");
+  const generatedTypeLabel = document.getElementById("generated-type-label");
   const copyGeneratedButton = document.getElementById("copy-generated");
   const useGeneratedButton = document.getElementById("use-generated");
   const copyFeedback = document.getElementById("copy-feedback");
+  const modePasswordButton = document.getElementById("mode-password");
+  const modePassphraseButton = document.getElementById("mode-passphrase");
+  const passwordOptions = document.getElementById("password-options");
+  const passphraseOptions = document.getElementById("passphrase-options");
+  const passwordLength = document.getElementById("password-length");
+  const passphraseCount = document.getElementById("passphrase-count");
+  const passphraseSeparator = document.getElementById("passphrase-separator");
   const setupSection = document.getElementById("vault-setup");
   const lockedSection = document.getElementById("vault-locked");
   const unlockedSection = document.getElementById("vault-unlocked");
@@ -44,12 +54,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveFavoriteButton = document.getElementById("save-favorite");
   const saveFeedback = document.getElementById("save-feedback");
   const favoriteList = document.getElementById("favorite-list");
+  const favoriteSearch = document.getElementById("favorite-search");
+  const favoriteSort = document.getElementById("favorite-sort");
   const vaultCount = document.getElementById("vault-count");
+  const vaultTimeout = document.getElementById("vault-timeout");
+  const exportVaultButton = document.getElementById("export-vault");
+  const importVaultButton = document.getElementById("import-vault");
+  const importVaultFile = document.getElementById("import-vault-file");
+  const transferFeedback = document.getElementById("transfer-feedback");
 
   let breachRequestId = 0;
   let breachTimer = 0;
+  let vaultLockTimer = 0;
   let currentBand = "neutral";
+  let currentPasswordForBreach = "";
   let generatedPassword = "";
+  let generatorMode = "password";
   let vaultPassphrase = "";
   let favorites = [];
 
@@ -61,12 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (saveFavoriteButton) saveFavoriteButton.disabled = !enabled;
   }
 
-  function createGeneratedPassword() {
-    generatedPassword = globalThis.PassBitEntropy.generateStrongPassword();
-    generatedOutput.textContent = generatedPassword;
-    copyGeneratedButton.disabled = false;
-    useGeneratedButton.disabled = false;
-    copyFeedback.textContent = "تم توليد كلمة جديدة.";
+  function setRetryVisible(visible) {
+    if (retryBreachButton) retryBreachButton.hidden = !visible;
   }
 
   function updateScore(value) {
@@ -75,15 +91,10 @@ document.addEventListener("DOMContentLoaded", () => {
     scoreRing.style.setProperty("--score", `${score * 3.6}deg`);
   }
 
-  function showView(view) {
-    const showingVault = view === "vault";
-    checkView.hidden = showingVault;
-    vaultView.hidden = !showingVault;
-    if (showingVault) refreshVaultState();
-  }
-
   function renderEmpty() {
     currentBand = "neutral";
+    currentPasswordForBreach = "";
+    window.clearTimeout(breachTimer);
     lengthValue.textContent = "0";
     typesValue.textContent = "0";
     lengthLabel.textContent = "0 حرف";
@@ -92,9 +103,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setClasses(resultCard, "result-card", "neutral");
     resultTitle.textContent = "بانتظار كلمة المرور";
     resultDescription.textContent = "سنحسب القوة بناءً على الطول والتنوع.";
+    scoreMeta.textContent = "تقدير محلي محسّن";
     breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
     breachValue.textContent = "لم يبدأ بعد";
+    setRetryVisible(false);
     tipLine.textContent = "نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.";
     renderReasons([]);
     setSaveButtonEnabled(false);
@@ -103,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderReasons(reasons) {
     if (!reasonList) return;
     reasonList.replaceChildren();
-    const items = Array.isArray(reasons) && reasons.length ? reasons.slice(0, 5) : ["لم نكتشف نمطًا شائعًا في الفحص المحلي."];
+    const items = Array.isArray(reasons) && reasons.length ? reasons.slice(0, 6) : ["لم نكتشف نمطًا شائعًا في الفحص المحلي."];
     items.forEach((reason) => {
       const item = document.createElement("li");
       item.textContent = reason;
@@ -122,24 +135,43 @@ document.addEventListener("DOMContentLoaded", () => {
     setClasses(resultCard, "result-card", result.band.id);
     resultTitle.textContent = `كلمة المرور ${result.band.labelAr}`;
     resultDescription.textContent = result.band.adviceAr;
+    scoreMeta.textContent = result.patternPenaltyBits > 0
+      ? `تقدير محسّن · خُصم ${result.patternPenaltyBits} بت بسبب أنماط واضحة`
+      : "تقدير محلي محسّن · لا توجد خصومات نمطية";
     breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
     breachValue.textContent = "جارٍ الفحص…";
-    tipLine.textContent = `نصيحة: ${result.suggestionsAr[0] || "ممتاز. لا تعِد استخدام كلمة المرور."}`;
+    setRetryVisible(false);
+    tipLine.textContent = `نصيحة: ${result.primarySuggestionAr}`;
     renderReasons(result.findingsAr);
     setSaveButtonEnabled(true);
   }
 
-  function renderBreachError() {
+  function breachErrorMessage(status) {
+    const messages = {
+      network_error: "لا يوجد اتصال بالشبكة الآن. التقييم المحلي متاح.",
+      timeout: "انتهت مهلة الاتصال. لم نعتبر كلمة المرور نظيفة.",
+      rate_limited: "الخدمة طلبت الانتظار قليلًا. حاول إعادة الفحص لاحقًا.",
+      service_unavailable: "خدمة فحص التسريبات غير متاحة مؤقتًا.",
+      http_error: "تعذر الوصول إلى خدمة فحص التسريبات.",
+      invalid_response: "تعذر قراءة استجابة خدمة التسريبات.",
+      invalid_input: "المدخل طويل جدًا لإجراء الفحص بأمان.",
+    };
+    return messages[status] || "تعذر فحص التسريبات الآن. لم نعتبر كلمة المرور نظيفة.";
+  }
+
+  function renderBreachError(status = "network_error") {
     breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
-    breachValue.textContent = "تعذر الفحص الآن";
+    breachValue.textContent = breachErrorMessage(status);
+    setRetryVisible(status !== "invalid_input");
     setClasses(resultCard, "result-card", "error");
     resultTitle.textContent = `القوة: ${currentBand === "strong" ? "قوية" : currentBand === "moderate" ? "متوسطة" : "ضعيفة"}`;
     resultDescription.textContent = "التقييم محسوب محليًا، لكن فحص التسريب غير متاح الآن.";
   }
 
   function renderBreachResult(result) {
+    setRetryVisible(false);
     if (result.status === "leaked") {
       breachIcon.className = "breach-icon leaked";
       breachIcon.textContent = "!";
@@ -158,36 +190,65 @@ document.addEventListener("DOMContentLoaded", () => {
       resultDescription.textContent = currentBand === "strong" ? "نتيجة جيدة. اجعلها فريدة دائمًا." : "لم تظهر في التسريبات، لكن حسّنها حسب النصيحة.";
       return;
     }
-    renderBreachError();
+    renderBreachError(result.status);
   }
 
-  function requestBreachCheck(password) {
+  function requestBreachCheck(password, immediate = false) {
     const requestId = ++breachRequestId;
+    currentPasswordForBreach = password;
     window.clearTimeout(breachTimer);
+    setRetryVisible(false);
     if (!password) {
       renderEmpty();
       return;
     }
-    breachTimer = window.setTimeout(() => {
+    const run = () => {
       chrome.runtime.sendMessage({ type: "PASSBIT_CHECK_BREACH", password }, (response) => {
         if (requestId !== breachRequestId) return;
         if (chrome.runtime.lastError || !response || !response.ok) {
-          renderBreachError();
+          renderBreachError(response?.status || "network_error");
           return;
         }
         renderBreachResult(response);
       });
-    }, 280);
+    };
+    breachTimer = window.setTimeout(run, immediate ? 0 : 280);
   }
 
-  async function copyText(value, feedbackElement) {
+  async function copyText(value, feedbackElement, defaultText = "") {
     try {
       await navigator.clipboard.writeText(value);
       feedbackElement.textContent = "تم النسخ.";
-      window.setTimeout(() => { feedbackElement.textContent = ""; }, 1800);
+      window.setTimeout(() => { feedbackElement.textContent = defaultText; }, 1800);
     } catch (error) {
       feedbackElement.textContent = "تعذر النسخ؛ حدّد النص يدويًا.";
     }
+  }
+
+  function createGeneratedValue() {
+    if (generatorMode === "passphrase") {
+      generatedPassword = globalThis.PassBitEntropy.generatePassphrase(Number(passphraseCount.value), passphraseSeparator.value);
+      generatedTypeLabel.textContent = "عبارة مرور من كلمات عشوائية محلية.";
+    } else {
+      generatedPassword = globalThis.PassBitEntropy.generateStrongPassword(Number(passwordLength.value));
+      generatedTypeLabel.textContent = `كلمة عشوائية بطول ${generatedPassword.length} حرفًا مع تنوع الأحرف.`;
+    }
+    generatedOutput.textContent = generatedPassword;
+    copyGeneratedButton.disabled = false;
+    useGeneratedButton.disabled = false;
+    copyFeedback.textContent = "تم التوليد محليًا.";
+  }
+
+  function setGeneratorMode(mode) {
+    generatorMode = mode === "passphrase" ? "passphrase" : "password";
+    const passphrase = generatorMode === "passphrase";
+    modePasswordButton.classList.toggle("active", !passphrase);
+    modePassphraseButton.classList.toggle("active", passphrase);
+    modePasswordButton.setAttribute("aria-selected", String(!passphrase));
+    modePassphraseButton.setAttribute("aria-selected", String(passphrase));
+    passwordOptions.hidden = passphrase;
+    passphraseOptions.hidden = !passphrase;
+    createGeneratedValue();
   }
 
   async function readVaultEnvelope() {
@@ -198,10 +259,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function getVisibleFavorites() {
+    const query = favoriteSearch.value.trim().toLocaleLowerCase();
+    const visible = favorites.filter((favorite) => !query || `${favorite.name} ${favorite.username}`.toLocaleLowerCase().includes(query));
+    if (favoriteSort.value === "name") visible.sort((a, b) => a.name.localeCompare(b.name, "ar"));
+    else visible.sort((a, b) => b.createdAt - a.createdAt);
+    return visible;
+  }
+
   function renderVaultFavorites() {
+    const visibleFavorites = getVisibleFavorites();
     favoriteList.replaceChildren();
-    vaultCount.textContent = favorites.length ? `${favorites.length} محفوظة ومشفّرة` : "لا توجد كلمات محفوظة";
-    favorites.forEach((favorite) => {
+    vaultCount.textContent = visibleFavorites.length === favorites.length
+      ? `${favorites.length} محفوظة ومشفّرة`
+      : `${visibleFavorites.length} من ${favorites.length} محفوظة`;
+    if (!visibleFavorites.length) {
+      const empty = document.createElement("p");
+      empty.className = "vault-empty";
+      empty.textContent = favorites.length ? "لا توجد نتيجة لهذا البحث." : "لا توجد كلمات محفوظة بعد.";
+      favoriteList.appendChild(empty);
+      return;
+    }
+    visibleFavorites.forEach((favorite) => {
       const item = document.createElement("article");
       item.className = "favorite-item";
       item.dataset.id = favorite.id;
@@ -238,13 +317,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function scheduleVaultLock() {
+    window.clearTimeout(vaultLockTimer);
+    const delay = Number(vaultTimeout.value) || 0;
+    if (!vaultPassphrase || delay <= 0) return;
+    vaultLockTimer = window.setTimeout(() => {
+      vaultPassphrase = "";
+      favorites = [];
+      refreshVaultState();
+    }, delay);
+  }
+
   async function refreshVaultState() {
     const envelope = await readVaultEnvelope();
     const hasVault = Boolean(envelope);
     setupSection.hidden = hasVault;
     lockedSection.hidden = !hasVault || Boolean(vaultPassphrase);
     unlockedSection.hidden = !hasVault || !vaultPassphrase;
-    if (vaultPassphrase) renderVaultFavorites();
+    if (vaultPassphrase) {
+      renderVaultFavorites();
+      scheduleVaultLock();
+    }
   }
 
   async function setupVault() {
@@ -287,13 +380,14 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockPassphrase.value = "";
       await refreshVaultState();
     } catch (error) {
-      unlockFeedback.textContent = "العبارة غير صحيحة.";
+      unlockFeedback.textContent = "العبارة غير صحيحة أو الملف غير صالح.";
     } finally {
       unlockButton.disabled = false;
     }
   }
 
   function lockVault() {
+    window.clearTimeout(vaultLockTimer);
     vaultPassphrase = "";
     favorites = [];
     refreshVaultState();
@@ -310,13 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
       saveFeedback.textContent = "اكتب اسم الخدمة وافحص كلمة المرور أولًا.";
       return;
     }
-    const record = {
-      id: globalThis.PassBitVault.createId(),
-      name,
-      username: favoriteUsernameInput.value.trim(),
-      password: passwordInput.value,
-      createdAt: Date.now(),
-    };
+    const record = { id: globalThis.PassBitVault.createId(), name, username: favoriteUsernameInput.value.trim(), password: passwordInput.value, createdAt: Date.now() };
     favorites = [record, ...favorites].slice(0, globalThis.PassBitVault.MAX_RECORDS);
     try {
       await globalThis.PassBitVault.saveRecords(vaultPassphrase, favorites);
@@ -324,6 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
       favoriteUsernameInput.value = "";
       saveFeedback.textContent = "تم الحفظ مشفّرًا.";
       renderVaultFavorites();
+      scheduleVaultLock();
     } catch (error) {
       saveFeedback.textContent = "تعذر الحفظ.";
     }
@@ -335,6 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const item = button.closest(".favorite-item");
     const favorite = favorites.find((entry) => entry.id === item?.dataset.id);
     if (!favorite) return;
+    scheduleVaultLock();
     if (button.dataset.favoriteAction === "toggle") {
       const field = item.querySelector(".favorite-password");
       const showing = field.type === "text";
@@ -343,7 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     if (button.dataset.favoriteAction === "copy") {
-      await copyText(favorite.password, button);
+      await copyText(favorite.password, button, "نسخ");
       return;
     }
     if (button.dataset.favoriteAction === "delete" && window.confirm(`حذف ${favorite.name}؟`)) {
@@ -356,10 +446,51 @@ document.addEventListener("DOMContentLoaded", () => {
   async function deleteVault() {
     if (!window.confirm("حذف الخزنة وكل كلماتها نهائيًا؟")) return;
     await globalThis.PassBitVault.deleteVault();
-    vaultPassphrase = "";
-    favorites = [];
+    lockVault();
     setupFeedback.textContent = "تم حذف الخزنة.";
     await refreshVaultState();
+  }
+
+  async function exportVault() {
+    transferFeedback.textContent = "";
+    const envelope = await readVaultEnvelope();
+    if (!envelope || !globalThis.PassBitVault.validateEnvelope(envelope)) {
+      transferFeedback.textContent = "لا توجد خزنة صالحة للتصدير.";
+      return;
+    }
+    const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "passbit-encrypted-vault.json";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    transferFeedback.textContent = "تم تصدير الغلاف المشفّر فقط.";
+  }
+
+  async function importVaultFileContents() {
+    transferFeedback.textContent = "";
+    const file = importVaultFile.files?.[0];
+    importVaultFile.value = "";
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      transferFeedback.textContent = "الملف كبير جدًا.";
+      return;
+    }
+    try {
+      const parsed = JSON.parse(await file.text());
+      const envelope = parsed?.envelope || parsed;
+      if (!globalThis.PassBitVault.validateEnvelope(envelope)) throw new Error("INVALID_VAULT");
+      if (favorites.length && !window.confirm("سيستبدل الاستيراد المفضلة الحالية. هل تريد المتابعة؟")) return;
+      const importedFavorites = await globalThis.PassBitVault.decryptRecords(vaultPassphrase, envelope);
+      await globalThis.PassBitVault.saveEnvelope(envelope);
+      favorites = importedFavorites;
+      renderVaultFavorites();
+      transferFeedback.textContent = "تم الاستيراد بعد التحقق من العبارة الرئيسية.";
+      scheduleVaultLock();
+    } catch (error) {
+      transferFeedback.textContent = "تعذر الاستيراد؛ الملف أو العبارة غير صحيحين.";
+    }
   }
 
   passwordInput.addEventListener("input", () => {
@@ -380,21 +511,23 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleButton.setAttribute("aria-label", showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
     toggleButton.setAttribute("aria-pressed", String(showPassword));
   });
+  retryBreachButton.addEventListener("click", () => requestBreachCheck(currentPasswordForBreach, true));
   openVaultButton.addEventListener("click", () => showView("vault"));
   closeVaultButton.addEventListener("click", () => showView("check"));
   generateButton.setAttribute("aria-expanded", "false");
   generateButton.addEventListener("click", () => {
     const opening = generatorPanel.hidden;
-    if (opening && !generatedPassword) createGeneratedPassword();
+    if (opening && !generatedPassword) createGeneratedValue();
     generatorPanel.hidden = !opening;
     generateButton.setAttribute("aria-expanded", String(opening));
     generateButton.querySelector("strong").textContent = opening ? "إخفاء المولّد" : "توليد كلمة مرور قوية";
   });
-  regenerateButton.addEventListener("click", () => {
-    createGeneratedPassword();
-    generatorPanel.hidden = false;
-    generateButton.setAttribute("aria-expanded", "true");
-  });
+  regenerateButton.addEventListener("click", createGeneratedValue);
+  modePasswordButton.addEventListener("click", () => setGeneratorMode("password"));
+  modePassphraseButton.addEventListener("click", () => setGeneratorMode("passphrase"));
+  passwordLength.addEventListener("change", createGeneratedValue);
+  passphraseCount.addEventListener("change", createGeneratedValue);
+  passphraseSeparator.addEventListener("change", createGeneratedValue);
   copyGeneratedButton.addEventListener("click", () => copyText(generatedPassword, copyFeedback));
   useGeneratedButton.addEventListener("click", () => {
     passwordInput.value = generatedPassword;
@@ -405,10 +538,24 @@ document.addEventListener("DOMContentLoaded", () => {
   unlockButton.addEventListener("click", unlockVault);
   lockButton.addEventListener("click", lockVault);
   deleteVaultButton.addEventListener("click", deleteVault);
-  if (saveFavoriteButton) saveFavoriteButton.addEventListener("click", saveFavorite);
+  saveFavoriteButton.addEventListener("click", saveFavorite);
   favoriteList.addEventListener("click", handleFavoriteAction);
+  favoriteSearch.addEventListener("input", () => { scheduleVaultLock(); renderVaultFavorites(); });
+  favoriteSort.addEventListener("change", () => { scheduleVaultLock(); renderVaultFavorites(); });
+  vaultTimeout.addEventListener("change", scheduleVaultLock);
+  exportVaultButton.addEventListener("click", exportVault);
+  importVaultButton.addEventListener("click", () => importVaultFile.click());
+  importVaultFile.addEventListener("change", importVaultFileContents);
+
+  function showView(view) {
+    const showingVault = view === "vault";
+    checkView.hidden = showingVault;
+    vaultView.hidden = !showingVault;
+    if (showingVault) refreshVaultState();
+  }
 
   renderEmpty();
+  setGeneratorMode("password");
   refreshVaultState();
   passwordInput.focus();
 });

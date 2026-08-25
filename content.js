@@ -35,6 +35,8 @@
       .${PANEL_CLASS} .passbit-panel-list li { position: relative; padding-right: 13px; color: #d3dfed; font-size: 11px; line-height: 1.4; }
       .${PANEL_CLASS} .passbit-panel-list li::before { position: absolute; right: 0; top: 5px; width: 5px; height: 5px; border: 1px solid #a78bfa; border-radius: 50%; content: ""; }
       .${PANEL_CLASS} .passbit-panel-note { margin: 10px 0 0; color: #7f91aa; font-size: 10px; line-height: 1.45; }
+      .${PANEL_CLASS} .passbit-panel-retry { display: none; margin-top: 8px; border: 1px solid rgba(39,212,237,.38); border-radius: 8px; padding: 6px 8px; background: rgba(39,212,237,.1); color: #8ceeff; font-size: 10px; font-weight: 700; cursor: pointer; }
+      .${PANEL_CLASS} .passbit-panel-retry[data-visible="true"] { display: inline-block; }
     `;
     (document.head || document.documentElement).appendChild(style);
   }
@@ -77,12 +79,16 @@
     breach.className = "passbit-panel-breach";
     const list = document.createElement("ul");
     list.className = "passbit-panel-list";
+    const retry = document.createElement("button");
+    retry.className = "passbit-panel-retry";
+    retry.type = "button";
+    retry.textContent = "إعادة فحص التسريب";
     const note = document.createElement("p");
     note.className = "passbit-panel-note";
-    note.textContent = "الفحص المحلي أولًا. لا يتم إرسال كلمة المرور نفسها.";
-    panel.append(head, result, breach, list, note);
+    note.textContent = "الفحص المحلي أولًا. لا يتم إرسال كلمة المرور نفسها أو سياق الصفحة.";
+    panel.append(head, result, breach, retry, list, note);
     document.documentElement.appendChild(panel);
-    return { panel, close, result, breach, list };
+    return { panel, close, result, breach, retry, list };
   }
 
   function createActionButton() {
@@ -130,13 +136,29 @@
     field.setAttribute("aria-label", `PassBit: ${label}`);
   }
 
-  function renderPanelSuggestions(panel, suggestions) {
+  function renderPanelReasons(panel, result) {
     panel.list.replaceChildren();
-    (Array.isArray(suggestions) ? suggestions : []).slice(0, 4).forEach((suggestion) => {
+    const localReasons = Array.isArray(result?.findingsAr) ? result.findingsAr : [];
+    const suggestions = Array.isArray(result?.suggestionsAr) ? result.suggestionsAr : [];
+    const reasons = [...localReasons, ...suggestions.slice(0, 3)];
+    if (!reasons.length) reasons.push("لم نكتشف نمطًا شائعًا في الفحص المحلي.");
+    reasons.slice(0, 6).forEach((reason) => {
       const item = document.createElement("li");
-      item.textContent = suggestion;
+      item.textContent = reason;
       panel.list.appendChild(item);
     });
+  }
+
+  function breachErrorMessage(status) {
+    const messages = {
+      network_error: "لا يوجد اتصال بالشبكة الآن. التقييم المحلي متاح.",
+      timeout: "انتهت مهلة الاتصال. لم نعتبر كلمة المرور نظيفة.",
+      rate_limited: "الخدمة طلبت الانتظار قليلًا. حاول إعادة الفحص لاحقًا.",
+      service_unavailable: "خدمة فحص التسريبات غير متاحة مؤقتًا.",
+      http_error: "تعذر الوصول إلى خدمة فحص التسريبات.",
+      invalid_response: "تعذر قراءة استجابة خدمة التسريبات.",
+    };
+    return messages[status] || "تعذر فحص التسريبات الآن. لم نعتبر كلمة المرور نظيفة.";
   }
 
   function scanField(field) {
@@ -144,6 +166,7 @@
     if (!entry) return;
     const password = field.value || "";
     showPanel(field);
+    entry.panel.retry.dataset.visible = "false";
     if (!password) {
       entry.panel.result.textContent = "اكتب كلمة المرور أولًا";
       entry.panel.breach.textContent = "لا يوجد شيء لفحصه بعد.";
@@ -153,14 +176,15 @@
 
     const result = globalThis.PassBitEntropy.analyzePassword(password, { contextWords: getContextWords(field) });
     setState(field, result.band.id, `القوة ${result.band.labelAr}`);
-    entry.panel.result.textContent = `القوة: ${result.band.labelAr} — ${result.entropyBits} بت`;
+    entry.panel.result.textContent = `القوة: ${result.band.labelAr} — ${result.effectiveEntropyBits} بت تقديرية`;
     entry.panel.breach.textContent = "جارٍ فحص التسريبات المعروفة…";
-    renderPanelSuggestions(entry.panel, result.suggestionsAr);
+    renderPanelReasons(entry.panel, result);
 
     chrome.runtime.sendMessage({ type: "PASSBIT_CHECK_BREACH", password }, (response) => {
       if (chrome.runtime.lastError || !response || !response.ok) {
         setState(field, "error", "تعذر فحص التسريبات");
-        entry.panel.breach.textContent = "تعذر الاتصال الآن. لم نعتبر كلمة المرور نظيفة.";
+        entry.panel.breach.textContent = breachErrorMessage(response?.status || "network_error");
+        entry.panel.retry.dataset.visible = response?.status === "invalid_input" ? "false" : "true";
         return;
       }
       if (response.status === "leaked") {
@@ -211,6 +235,7 @@
     panel.close.addEventListener("click", () => {
       panel.panel.dataset.visible = "false";
     });
+    panel.retry.addEventListener("click", () => scanField(field));
   }
 
   function scan(root) {
