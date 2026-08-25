@@ -1,13 +1,13 @@
 # PassBit — Zero-Knowledge Entropy & Breach Detector
 
-**Version:** 1.8.3
+**Version:** 1.8.5
 **Author:** Firas — Cybersecurity Student & Web Security Researcher  
 **Platform:** Google Chrome Extension, Manifest V3  
 **Document status:** Production-oriented implementation specification
 
 ## Scope and design intent
 
-PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.8.3 applies the Stitch Modern Utility / Functional Privacy direction in a calm dark mode and maps the GitHub Hero reference into the live popup: a compact header, eye/copy input actions, measurement tiles, horizontal strength bar, HIBP row, generator row, and favorites preview. It uses charcoal surfaces, slightly lighter cards, restrained blue actions, subtle borders, and a simpler inline panel without neon or glassmorphism. It retains the deeper local pattern analysis, specific improvement guidance, clearer HIBP network states with retry, customizable random-password and passphrase generation, organized vault search and sorting, encrypted-envelope import/export, and configurable vault auto-lock introduced in v1.8.0. The dark palette is a visual update only and does not change the security model. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
+PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.8.5 applies the Stitch image-to-code export as the live popup structure in the Stitch Modern Utility / Functional Privacy direction in a calm dark mode and maps the GitHub Hero reference into the live popup: a compact 400×563 header, SVG eye/copy input actions, icon measurement tiles, segmented horizontal strength bar, HIBP row with chevron, generator row, and masked favorites preview. It uses charcoal surfaces, slightly lighter cards, restrained blue actions, subtle borders, and a simpler inline panel without neon or glassmorphism. It retains the deeper local pattern analysis, specific improvement guidance, clearer HIBP network states with retry, customizable random-password and passphrase generation, organized vault search and sorting, encrypted-envelope import/export, and configurable vault auto-lock introduced in v1.8.0. The dark palette is a visual update only and does not change the security model. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
 
 The security boundary is explicit. Entropy is a mathematical estimate based on an assumed character pool; it is not a proof that a password is random. The breach result is a corpus lookup; a clean response does not prove that a password has never been exposed elsewhere. The UI uses this language so that users are not given false certainty.
 
@@ -15,7 +15,7 @@ The security boundary is explicit. Entropy is a mathematical estimate based on a
 
 ### 1.1 Product identity
 
-PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.8.3**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
+PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.8.5**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
 
 The core value proposition is a zero-cost, privacy-first Chrome Extension that provides an immediate password-strength estimate, explainable local warnings, and a breach exposure signal directly inside the browser. The extension does not require an account, does not store passwords by default, and does not add analytics or telemetry; an explicitly saved favorite is stored only as authenticated ciphertext. The only outbound request is the privacy-preserving range request needed for the optional breach check.
 

@@ -13,29 +13,35 @@
         <img class="brand-mark" src="../icons/icon32.png" alt="PB">
         <div><h1>PassBit</h1><p>فحص كلمة المرور بوضوح</p></div>
       </div>
-      <button id="open-vault" class="header-icon-button" type="button" title="فتح المفضلة المشفّرة" aria-label="فتح المفضلة المشفّرة">⚙</button>
+      <button id="open-vault" class="header-icon-button" type="button" title="فتح المفضلة المشفّرة" aria-label="فتح المفضلة المشفّرة">
+        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Zm0 2a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2Z"/><path d="m19.4 13.4 1.4 1.1-1.8 3.1-1.7-.7a8 8 0 0 1-1.7 1l-.2 1.8h-3.6l-.2-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.8-3.1 1.4-1.1a7 7 0 0 1 0-2.8L6.4 9.5l1.8-3.1 1.7.7a8 8 0 0 1 1.7-1l.2-1.8h3.6l.2 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.8 3.1-1.4 1.1a7 7 0 0 1 0 2.8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </button>
     </header>
 
     <section id="check-view" class="view">
       <section class="input-card">
-        <div class="section-heading"><h2>فحص كلمة المرور</h2><p>تحليل محلي سريع وخصوصية واضحة.</p></div>
+        <div class="section-heading"><h2>فحص كلمة المرور</h2></div>
         <div class="input-wrap">
-          <button id="toggle-password" class="input-action toggle-action" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">◉</button>
+          <button id="toggle-password" class="input-action toggle-action" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3.5 12s3.1-5 8.5-5 8.5 5 8.5 5-3.1 5-8.5 5-8.5-5-8.5-5Z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span class="sr-only action-label">إظهار</span>
+          </button>
           <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="اكتب كلمة المرور هنا" aria-describedby="input-hint">
-          <button id="copy-input" class="input-action" type="button" title="نسخ كلمة المرور" aria-label="نسخ كلمة المرور">▣</button>
+          <button id="copy-input" class="input-action" type="button" title="نسخ كلمة المرور" aria-label="نسخ كلمة المرور">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="8" y="7" width="11" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+          </button>
         </div>
         <div id="input-hint" class="field-meta"><span id="length-label">0 حرف</span><span id="types-label">0 من 4 أنواع</span></div>
         <p id="input-feedback" class="input-feedback" aria-live="polite"></p>
       </section>
 
       <section class="stats-grid" aria-label="قياسات كلمة المرور">
-        <div class="stat-card"><span class="stat-icon" aria-hidden="true">▤</span><span class="stat-label">الطول</span><strong id="length-value">0</strong><small>حرف</small></div>
-        <div class="stat-card"><span class="stat-icon" aria-hidden="true">⠿</span><span class="stat-label">أنواع الأحرف</span><strong id="types-value">0/4</strong><small>أنواع</small></div>
+        <div class="stat-card"><svg class="stat-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 8h16v8H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 8v3m3-3v2m3-2v3m3-3v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="stat-label">الطول</span><strong id="length-value">0</strong><small>حرف</small></div>
+        <div class="stat-card"><svg class="stat-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="5" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="5" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="14" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="14" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span class="stat-label">أنواع الأحرف</span><strong id="types-value">0/4</strong><small>أنواع</small></div>
       </section>
 
       <section id="result-card" class="result-card neutral" aria-live="polite">
         <div class="result-header"><h2>قوة كلمة المرور</h2><strong id="result-title">بانتظار الفحص</strong></div>
-        <div id="score-ring" class="score-ring" style="--score: 0deg; --score-percent: 0%"><div class="score-inner"><strong id="score-value">0</strong><small>/100</small></div></div>
+        <div id="score-ring" class="score-ring" style="--score: 0deg; --score-percent: 0%"><div class="score-inner sr-only"><strong id="score-value">0</strong><small>/100</small></div></div>
         <p id="result-description" class="sr-only">سنحسب القوة بناءً على الطول والتنوع.</p>
         <small id="score-meta" class="score-meta sr-only">تقدير محلي محسّن</small>
       </section>
@@ -46,17 +52,17 @@
           <div class="breach-copy"><span id="breach-value">لم يبدأ بعد</span></div>
           <div id="breach-icon" class="breach-icon">◇</div>
           <button id="retry-breach" class="small-button retry-button" type="button" hidden>إعادة الفحص</button>
+          <span class="breach-arrow" aria-hidden="true">‹</span>
         </div>
+        <details class="check-details">
+          <summary>لماذا ظهرت هذه النتيجة؟</summary>
+          <ul id="reason-list"><li>اكتب كلمة المرور لعرض الفحوصات.</li></ul>
+          <p>نفحص محليًا: الكلمات الشائعة، التكرار، التسلسلات، لوحة المفاتيح، التواريخ، الأرقام الواضحة، والاستعاضة البسيطة بالرموز.</p>
+        </details>
       </section>
 
-      <details class="check-details">
-        <summary>لماذا ظهرت هذه النتيجة؟</summary>
-        <ul id="reason-list"><li>اكتب كلمة المرور لعرض الفحوصات.</li></ul>
-        <p>نفحص محليًا: الكلمات الشائعة، التكرار، التسلسلات، لوحة المفاتيح، التواريخ، الأرقام الواضحة، والاستعاضة البسيطة بالرموز.</p>
-      </details>
-
       <section class="generator-section">
-        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true">⚿</span><span><strong>مولّد</strong><small>كلمة عشوائية أو عبارة مرور</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
+        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="m14.5 4.5 5 5M13 6l-5 5a3 3 0 0 0 0 4.2l.8.8a3 3 0 0 0 4.2 0l5-5M10 18l-2.5 2.5M6.5 15.5 4 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17.5" cy="6.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span><span><strong>مولّد</strong><small>كلمة عشوائية أو عبارة مرور</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
         <section id="generator-panel" class="generator-panel" hidden aria-label="مولّد كلمات المرور">
           <div class="generator-heading"><div><h3>المولد المحلي</h3><p>لا يتم إرسال الناتج. عدّل الخيارات ثم ولّد قيمة جديدة.</p></div><button id="regenerate-generated" class="secondary-button" type="button" title="إنشاء قيمة مختلفة">توليد</button></div>
           <div class="generator-modes" role="tablist" aria-label="نوع المولد">
@@ -84,11 +90,11 @@
       </section>
 
       <section class="favorites-preview" aria-label="المفضلة المشفّرة">
-        <div class="preview-heading"><h2>المفضلة</h2><span class="preview-plus" aria-hidden="true">＋</span></div>
+        <div class="preview-heading"><h2>المفضلة</h2><button class="preview-plus" type="button" aria-label="فتح المفضلة المشفّرة" data-open-vault>＋</button></div>
         <button class="preview-vault-row" type="button" aria-label="فتح المفضلة المشفّرة" data-open-vault>
-          <span class="preview-globe" aria-hidden="true">◎</span>
-          <span class="preview-item-copy" dir="rtl"><strong>example.com</strong><small>••••••••••</small></span>
-          <span class="preview-item-actions" aria-hidden="true"><span>◉</span><span>▣</span></span>
+          <span class="preview-globe" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 12h16.4M12 3.5c2.1 2.4 3.2 5.2 3.2 8.5S14.1 18.1 12 20.5C9.9 18.1 8.8 15.3 8.8 12S9.9 5.9 12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>
+          <span class="preview-item-copy" dir="ltr"><strong>example.com</strong><small>••••••••••</small></span>
+          <span class="preview-item-actions" aria-hidden="true"><span><svg class="icon" viewBox="0 0 24 24"><path d="M3.5 12s3.1-5 8.5-5 8.5 5 8.5 5-3.1 5-8.5 5-8.5-5-8.5-5Z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></span><span><svg class="icon" viewBox="0 0 24 24"><rect x="8" y="7" width="11" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></span></span>
         </button>
       </section>
 

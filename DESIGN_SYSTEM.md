@@ -1,6 +1,6 @@
 # PassBit Design System
 
-**Version:** 1.8.4
+**Version:** 1.8.5
 **Direction:** Modern Utility / Functional Privacy
 **Primary language:** Arabic, RTL
 **Popup target:** 400×563px Chrome extension popup
@@ -13,7 +13,7 @@ PassBit is a quiet, practical browser utility for checking password strength and
 
 Use a calm dark surface, slightly lighter charcoal cards, restrained blue actions, thin low-contrast borders, small structural radii, and accessible semantic status colors. Avoid glassmorphism, neon glow, cyberpunk decoration, heavy gradients, 3D illustrations, excessive pills, and icon-only actions without a text label.
 
-The popup uses one vertical RTL column. The primary task is always the password input. Advanced functions are expandable or separated into the favorites view so the first screen remains short and understandable.
+The popup uses one vertical RTL column. The primary task is always the password input. Advanced functions are expandable or separated into the favorites view so the first screen remains short and understandable. The live popup follows the supplied Stitch image-to-code export: a compact 400×563 dark container, SVG controls, icon measurement tiles, segmented strength bar, HIBP row, generator row, and masked favorites preview.
 
 ## Color tokens
 

@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeVaultButton = document.getElementById("close-vault");
   const passwordInput = document.getElementById("password-input");
   const toggleButton = document.getElementById("toggle-password");
+  const toggleLabel = toggleButton.querySelector(".action-label");
   const copyInputButton = document.getElementById("copy-input");
   const inputFeedback = document.getElementById("input-feedback");
   const lengthValue = document.getElementById("length-value");
@@ -513,7 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
   toggleButton.addEventListener("click", () => {
     const showPassword = passwordInput.type === "password";
     passwordInput.type = showPassword ? "text" : "password";
-    toggleButton.textContent = showPassword ? "إخفاء" : "إظهار";
+    if (toggleLabel) toggleLabel.textContent = showPassword ? "إخفاء" : "إظهار";
     toggleButton.setAttribute("aria-label", showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
     toggleButton.setAttribute("aria-pressed", String(showPassword));
   });
