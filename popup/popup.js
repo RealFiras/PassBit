@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const breachIcon = document.getElementById("breach-icon");
   const breachValue = document.getElementById("breach-value");
   const tipLine = document.getElementById("tip-line");
+  const reasonList = document.getElementById("reason-list");
   const generatorPanel = document.getElementById("generator-panel");
   const generateButton = document.getElementById("generate-password");
   const regenerateButton = document.getElementById("regenerate-generated");
@@ -94,8 +95,20 @@ document.addEventListener("DOMContentLoaded", () => {
     breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
     breachValue.textContent = "لم يبدأ بعد";
-    tipLine.textContent = "استخدم 14 حرفًا أو أكثر، واجعلها فريدة.";
+    tipLine.textContent = "نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.";
+    renderReasons([]);
     setSaveButtonEnabled(false);
+  }
+
+  function renderReasons(reasons) {
+    if (!reasonList) return;
+    reasonList.replaceChildren();
+    const items = Array.isArray(reasons) && reasons.length ? reasons.slice(0, 5) : ["لم نكتشف نمطًا شائعًا في الفحص المحلي."];
+    items.forEach((reason) => {
+      const item = document.createElement("li");
+      item.textContent = reason;
+      reasonList.appendChild(item);
+    });
   }
 
   function renderLocalAnalysis(result) {
@@ -112,7 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
     breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
     breachValue.textContent = "جارٍ الفحص…";
-    tipLine.textContent = result.suggestionsAr[0] || "ممتاز. لا تعِد استخدام كلمة المرور.";
+    tipLine.textContent = `نصيحة: ${result.suggestionsAr[0] || "ممتاز. لا تعِد استخدام كلمة المرور."}`;
+    renderReasons(result.findingsAr);
     setSaveButtonEnabled(true);
   }
 

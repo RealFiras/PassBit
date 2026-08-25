@@ -46,6 +46,13 @@
     return type === "password" || autocomplete.includes("current-password") || autocomplete.includes("new-password");
   }
 
+  function getContextWords(field) {
+    const ignored = new Set(["password", "pass", "pwd", "login", "user", "username", "email", "account", "current", "new", "confirm"]);
+    const labelText = field.labels ? Array.from(field.labels).map((label) => label.textContent || "").join(" ") : "";
+    const raw = [location.hostname, document.title, field.name, field.id, field.getAttribute("aria-label"), field.getAttribute("placeholder"), labelText].filter(Boolean).join(" ");
+    return raw.split(/[^\p{L}\p{N}]+/u).map((word) => word.trim()).filter((word) => word.length >= 4 && !ignored.has(word.toLowerCase())).slice(0, 20);
+  }
+
   function createPanel() {
     const panel = document.createElement("section");
     panel.className = PANEL_CLASS;
@@ -144,7 +151,7 @@
       return;
     }
 
-    const result = globalThis.PassBitEntropy.analyzePassword(password);
+    const result = globalThis.PassBitEntropy.analyzePassword(password, { contextWords: getContextWords(field) });
     setState(field, result.band.id, `القوة ${result.band.labelAr}`);
     entry.panel.result.textContent = `القوة: ${result.band.labelAr} — ${result.entropyBits} بت`;
     entry.panel.breach.textContent = "جارٍ فحص التسريبات المعروفة…";
