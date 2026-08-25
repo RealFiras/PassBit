@@ -1,9 +1,9 @@
 # PassBit Design System
 
-**Version:** 1.8.2
+**Version:** 1.8.4
 **Direction:** Modern Utility / Functional Privacy
 **Primary language:** Arabic, RTL
-**Popup target:** 380px wide Chrome extension popup
+**Popup target:** 400×563px Chrome extension popup
 
 ## Purpose
 
@@ -46,14 +46,14 @@ Use IBM Plex Sans Arabic when it is available, with `Tahoma, Arial, sans-serif` 
 
 | Component | Rule |
 | --- | --- |
-| Header | Compact PassBit wordmark, restrained flat PB mark, and clear `المفضلة` action. |
-| Password input | One large masked field, explicit `إظهار` / `إخفاء` button, and visible length/type metadata. |
-| Measurement cards | Two quiet cards for actual Unicode length and active character groups. |
-| Strength card | Score number with a simple horizontal bar, Arabic status, and short explanation. |
-| Breach row | Separate status card with checking, clean, leaked, or unavailable state; show `إعادة الفحص` when needed. |
+| Header | Compact PassBit lock icon, PassBit wordmark, and a small settings/favorites control. |
+| Password input | One large masked field with eye and copy controls, plus visible length/type metadata. |
+| Measurement cards | Two compact bordered cards with simple line icons for actual Unicode length and active character groups. |
+| Strength card | Arabic strength label, short horizontal segmented-looking progress bar, and an accessible hidden explanation. |
+| Breach row | `HIBP (حالة التسريب)` heading followed by a compact status row and retry action when needed. |
 | Reason details | Native expandable section titled `لماذا ظهرت هذه النتيجة؟`. |
 | Generator | Expandable card with explicit random-password/passphrase modes and labeled actions. |
-| Vault item | Flat list item with service name, optional username, masked password, and text-labeled actions. |
+| Vault item | Flat preview row with a globe-style marker, example service label, masked dots, eye/copy affordances, and a clear path to the real encrypted vault. |
 | Feedback | Short Arabic status messages such as `تم النسخ` and `تم الحفظ مشفّرًا`. |
 
 ## States

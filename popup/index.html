@@ -20,7 +20,7 @@
       <section class="input-card">
         <div class="section-heading"><h2>فحص كلمة المرور</h2><p>تحليل محلي سريع وخصوصية واضحة.</p></div>
         <div class="input-wrap">
-          <button id="toggle-password" class="input-action" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">◉</button>
+          <button id="toggle-password" class="input-action toggle-action" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">◉</button>
           <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="اكتب كلمة المرور هنا" aria-describedby="input-hint">
           <button id="copy-input" class="input-action" type="button" title="نسخ كلمة المرور" aria-label="نسخ كلمة المرور">▣</button>
         </div>
@@ -29,21 +29,24 @@
       </section>
 
       <section class="stats-grid" aria-label="قياسات كلمة المرور">
-        <div class="stat-card"><span>الطول</span><strong id="length-value">0</strong><small>حرف</small></div>
-        <div class="stat-card"><span>أنواع الأحرف</span><strong id="types-value">0/4</strong><small>أنواع</small></div>
+        <div class="stat-card"><span class="stat-icon" aria-hidden="true">▤</span><span class="stat-label">الطول</span><strong id="length-value">0</strong><small>حرف</small></div>
+        <div class="stat-card"><span class="stat-icon" aria-hidden="true">⠿</span><span class="stat-label">أنواع الأحرف</span><strong id="types-value">0/4</strong><small>أنواع</small></div>
       </section>
 
       <section id="result-card" class="result-card neutral" aria-live="polite">
         <div class="result-header"><h2>قوة كلمة المرور</h2><strong id="result-title">بانتظار الفحص</strong></div>
         <div id="score-ring" class="score-ring" style="--score: 0deg; --score-percent: 0%"><div class="score-inner"><strong id="score-value">0</strong><small>/100</small></div></div>
-        <p id="result-description">سنحسب القوة بناءً على الطول والتنوع.</p>
-        <small id="score-meta" class="score-meta">تقدير محلي محسّن</small>
+        <p id="result-description" class="sr-only">سنحسب القوة بناءً على الطول والتنوع.</p>
+        <small id="score-meta" class="score-meta sr-only">تقدير محلي محسّن</small>
       </section>
 
-      <section class="breach-row" aria-live="polite">
-        <div class="breach-copy"><strong>HIBP <span>(حالة التسريب)</span></strong><span id="breach-value">لم يبدأ بعد</span></div>
-        <div id="breach-icon" class="breach-icon">◇</div>
-        <button id="retry-breach" class="small-button retry-button" type="button" hidden>إعادة الفحص</button>
+      <section class="breach-section" aria-live="polite">
+        <h2 class="breach-heading">HIBP <span>(حالة التسريب)</span></h2>
+        <div class="breach-row">
+          <div class="breach-copy"><span id="breach-value">لم يبدأ بعد</span></div>
+          <div id="breach-icon" class="breach-icon">◇</div>
+          <button id="retry-breach" class="small-button retry-button" type="button" hidden>إعادة الفحص</button>
+        </div>
       </section>
 
       <details class="check-details">
@@ -53,7 +56,7 @@
       </details>
 
       <section class="generator-section">
-        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true">⌁</span><span><strong>مولّد</strong><small>كلمة عشوائية أو عبارة مرور</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
+        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true">⚿</span><span><strong>مولّد</strong><small>كلمة عشوائية أو عبارة مرور</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
         <section id="generator-panel" class="generator-panel" hidden aria-label="مولّد كلمات المرور">
           <div class="generator-heading"><div><h3>المولد المحلي</h3><p>لا يتم إرسال الناتج. عدّل الخيارات ثم ولّد قيمة جديدة.</p></div><button id="regenerate-generated" class="secondary-button" type="button" title="إنشاء قيمة مختلفة">توليد</button></div>
           <div class="generator-modes" role="tablist" aria-label="نوع المولد">
@@ -82,9 +85,14 @@
 
       <section class="favorites-preview" aria-label="المفضلة المشفّرة">
         <div class="preview-heading"><h2>المفضلة</h2><span class="preview-plus" aria-hidden="true">＋</span></div>
-        <button class="preview-vault-row" type="button" aria-label="فتح المفضلة المشفّرة" data-open-vault><span class="preview-vault-icon" aria-hidden="true">◉</span><span><strong>المفضلة المشفّرة</strong><small>افتح الخزنة المحلية</small></span><span class="preview-arrow" aria-hidden="true">‹</span></button>
+        <button class="preview-vault-row" type="button" aria-label="فتح المفضلة المشفّرة" data-open-vault>
+          <span class="preview-globe" aria-hidden="true">◎</span>
+          <span class="preview-item-copy" dir="rtl"><strong>example.com</strong><small>••••••••••</small></span>
+          <span class="preview-item-actions" aria-hidden="true"><span>◉</span><span>▣</span></span>
+        </button>
       </section>
 
+      <p id="tip-line" class="sr-only" aria-live="polite">نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.</p>
       <p class="privacy-note">التحليل محلي · لا تُرسل كلمة المرور كاملة</p>
     </section>
 
