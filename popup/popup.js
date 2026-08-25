@@ -52,7 +52,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let favorites = [];
 
   function setClasses(element, ...classes) {
-    element.className = classes.filter(Boolean).join(" ");
+    if (element) element.className = classes.filter(Boolean).join(" ");
+  }
+
+  function setSaveButtonEnabled(enabled) {
+    if (saveFavoriteButton) saveFavoriteButton.disabled = !enabled;
   }
 
   function updateScore(value) {
@@ -82,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     breachIcon.textContent = "◇";
     breachValue.textContent = "لم يبدأ بعد";
     tipLine.textContent = "استخدم 14 حرفًا أو أكثر، واجعلها فريدة.";
-    saveFavoriteButton.disabled = true;
+    setSaveButtonEnabled(false);
   }
 
   function renderLocalAnalysis(result) {
@@ -100,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     breachIcon.textContent = "◇";
     breachValue.textContent = "جارٍ الفحص…";
     tipLine.textContent = result.suggestionsAr[0] || "ممتاز. لا تعِد استخدام كلمة المرور.";
-    saveFavoriteButton.disabled = false;
+    setSaveButtonEnabled(true);
   }
 
   function renderBreachError() {
@@ -375,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
   unlockButton.addEventListener("click", unlockVault);
   lockButton.addEventListener("click", lockVault);
   deleteVaultButton.addEventListener("click", deleteVault);
-  saveFavoriteButton.addEventListener("click", saveFavorite);
+  if (saveFavoriteButton) saveFavoriteButton.addEventListener("click", saveFavorite);
   favoriteList.addEventListener("click", handleFavoriteAction);
 
   renderEmpty();

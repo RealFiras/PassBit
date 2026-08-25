@@ -1,13 +1,13 @@
 # PassBit — Zero-Knowledge Entropy & Breach Detector
 
-**Version:** 1.3.0
+**Version:** 1.3.1
 **Author:** Firas — Cybersecurity Student & Web Security Researcher  
 **Platform:** Google Chrome Extension, Manifest V3  
 **Document status:** Production-oriented implementation specification
 
 ## Scope and design intent
 
-PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.3.0 adds a compact modern Arabic popup, live length and character-diversity measurements, a direct entropy-derived score ring, a new lock-shield logo, an opt-in PBKDF2/AES-GCM vault, and a double-click quick-scan chip beside page password fields. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
+PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.3.1 adds a compact modern Arabic popup, live length and character-diversity measurements, a direct entropy-derived score ring, a new lock-shield logo, an opt-in PBKDF2/AES-GCM vault, and a double-click quick-scan chip beside page password fields. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
 
 The security boundary is explicit. Entropy is a mathematical estimate based on an assumed character pool; it is not a proof that a password is random. The breach result is a corpus lookup; a clean response does not prove that a password has never been exposed elsewhere. The UI uses this language so that users are not given false certainty.
 
@@ -130,7 +130,7 @@ The popup is a compact Arabic RTL security panel with a dark background, lock-sh
 
 | UI region | Behavior | Accessibility expectation |
 | --- | --- | --- |
-| Header | Shows PassBit, version 1.3.0, and the lock-shield logo. | Brand text remains available independently of the icon. |
+| Header | Shows PassBit, version 1.3.1, and the lock-shield logo. | Brand text remains available independently of the icon. |
 | Password input | Accepts a value locally and updates length, character diversity, score, advice, and breach status after each input event. | Visible label, autocomplete hint, focus ring, and password type by default. |
 | Show/HIDE control | Toggles visibility only while the popup remains open. | Button label and `aria-pressed` state change together. |
 | Live measurements | Shows actual Unicode length and the number of active character groups out of four. | The values are text, not color-only indicators. |
