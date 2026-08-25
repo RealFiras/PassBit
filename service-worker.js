@@ -3,7 +3,7 @@
 const PWNED_PASSWORDS_RANGE_URL = "https://api.pwnedpasswords.com/range/";
 const MAX_PASSWORD_LENGTH = 4096;
 const REQUEST_TIMEOUT_MS = 12000;
-const PASSBIT_USER_AGENT = "PassBit/1.8.6 (Chrome Extension; Firas)";
+const PASSBIT_USER_AGENT = "PassBit/1.8.7 (Chrome Extension; Firas)";
 
 async function sha1Hex(value) {
   const bytes = new TextEncoder().encode(value);

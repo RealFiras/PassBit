@@ -1,6 +1,6 @@
 # PassBit Design System
 
-**Version:** 1.8.6
+**Version:** 1.8.7
 **Direction:** Modern Utility / Functional Privacy
 **Primary language:** Arabic, RTL
 **Popup target:** 400×563px Chrome extension popup
@@ -19,28 +19,25 @@ The popup uses one vertical RTL column. The primary task is always the password 
 
 | Token | Value | Use |
 | --- | --- | --- |
-| Surface | `#0F141C` | Popup background |
-| Surface low | `#151B25` | Measurement cards and quiet fields |
-| Card | `#1A212C` | Main cards and list items |
-| Text | `#F3F6FB` | Headings and primary content |
-| Muted text | `#AAB4C3` | Metadata and helper copy |
-| Border | `#435064` | Inputs and structural controls |
-| Soft border | `#2B3544` | Separators and low-emphasis cards |
-| Primary | `#70A7FF` | Primary actions and focus |
-| Primary bright | `#9BC2FF` | Primary text and hover state |
-| Primary soft | `#1D3760` | Focus backgrounds and active controls |
-| Strong / clean | `#5BD8A8` | Positive status |
-| Strong soft | `#153D32` | Positive status background |
-| Moderate | `#F4BA63` | Caution status |
-| Moderate soft | `#3D2D17` | Caution status background |
-| Weak / leaked | `#FF938B` | High-risk status |
-| Weak soft | `#4A2226` | High-risk status background |
+| App background | `#1e2126` | Popup background and main canvas |
+| Card background | `#262930` | Measurement cards, HIBP card, favorites preview |
+| Border | `#3a3f48` | Inputs, cards, separators, and structural controls |
+| Text | `#e2e8f0` | Headings and primary content |
+| Muted text | `#94a3b8` | Metadata, helper copy, and placeholders |
+| Primary blue | `#3b82f6` | Focus, actions, numeric emphasis, and active segments |
+| Strong green | `#4ade80` | Positive strength and clean-query status |
+| Caution amber | `#fbbf24` | Moderate estimate and caution state |
+| Risk red | `#f87171` | Weak or leaked state |
 
 Status must never be communicated by color alone. Pair color with Arabic text, state labels, and short explanations.
 
 ## Typography and spacing
 
-Use IBM Plex Sans Arabic when it is available, with `Tahoma, Arial, sans-serif` fallbacks. Use a monospace fallback such as JetBrains Mono or Consolas for password values. Default popup edge spacing is 16px, the common stack gap is 10–12px, and the standard structural radius is 8px. Buttons use 6px radii; status dots may be circular.
+Use the locally available Arabic system stack with `Cairo, Tahoma, Arial, sans-serif` fallbacks. Use a monospace fallback such as `Consolas, monospace` for password values. The popup target is 400px wide with a 16px header/content inset, a 24px structural section gap, 12px card/input radii, and a 40px brand mark. Buttons and icon controls remain compact, keyboard-operable, and visually aligned to the Stitch reference.
+
+## Brand assets
+
+`assets/passbit-logo.png` is the standalone PassBit lock/P emblem for README and project branding. `assets/passbit-usage-mockup.png` is a documentation-only 16:9 visual showing the popup beside a generic demo login page; it must not be presented as a real account or a live browser capture.
 
 ## Core components
 
