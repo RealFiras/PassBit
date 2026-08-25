@@ -1,8 +1,8 @@
 # PassBit Design System
 
-**Version:** 1.8.1  
-**Direction:** Modern Utility / Functional Privacy  
-**Primary language:** Arabic, RTL  
+**Version:** 1.8.2
+**Direction:** Modern Utility / Functional Privacy
+**Primary language:** Arabic, RTL
 **Popup target:** 380px wide Chrome extension popup
 
 ## Purpose
@@ -11,7 +11,7 @@ PassBit is a quiet, practical browser utility for checking password strength and
 
 ## Visual rules
 
-Use a light-first surface, flat white cards, restrained blue actions, thin neutral borders, small structural radii, and accessible semantic status colors. Avoid glassmorphism, neon glow, cyberpunk decoration, heavy gradients, 3D illustrations, excessive pills, and icon-only actions without a text label.
+Use a calm dark surface, slightly lighter charcoal cards, restrained blue actions, thin low-contrast borders, small structural radii, and accessible semantic status colors. Avoid glassmorphism, neon glow, cyberpunk decoration, heavy gradients, 3D illustrations, excessive pills, and icon-only actions without a text label.
 
 The popup uses one vertical RTL column. The primary task is always the password input. Advanced functions are expandable or separated into the favorites view so the first screen remains short and understandable.
 
@@ -19,22 +19,22 @@ The popup uses one vertical RTL column. The primary task is always the password 
 
 | Token | Value | Use |
 | --- | --- | --- |
-| Surface | `#F9F9FF` | Popup background |
-| Surface low | `#F0F3FF` | Measurement cards and quiet fields |
-| Card | `#FFFFFF` | Main cards and list items |
-| Text | `#151C27` | Headings and primary content |
-| Muted text | `#5F6675` | Metadata and helper copy |
-| Border | `#C3C6D7` | Inputs and structural controls |
-| Soft border | `#E5E7EF` | Separators and low-emphasis cards |
-| Primary | `#2563EB` | Primary actions and focus |
-| Primary dark | `#004AC6` | Primary text and hover state |
-| Primary soft | `#DBE6FF` | Focus backgrounds and active controls |
-| Strong / clean | `#087F5B` | Positive status |
-| Strong soft | `#D8F4E8` | Positive status background |
-| Moderate | `#A95400` | Caution status |
-| Moderate soft | `#FFF0D9` | Caution status background |
-| Weak / leaked | `#BA1A1A` | High-risk status |
-| Weak soft | `#FFDAD6` | High-risk status background |
+| Surface | `#0F141C` | Popup background |
+| Surface low | `#151B25` | Measurement cards and quiet fields |
+| Card | `#1A212C` | Main cards and list items |
+| Text | `#F3F6FB` | Headings and primary content |
+| Muted text | `#AAB4C3` | Metadata and helper copy |
+| Border | `#435064` | Inputs and structural controls |
+| Soft border | `#2B3544` | Separators and low-emphasis cards |
+| Primary | `#70A7FF` | Primary actions and focus |
+| Primary bright | `#9BC2FF` | Primary text and hover state |
+| Primary soft | `#1D3760` | Focus backgrounds and active controls |
+| Strong / clean | `#5BD8A8` | Positive status |
+| Strong soft | `#153D32` | Positive status background |
+| Moderate | `#F4BA63` | Caution status |
+| Moderate soft | `#3D2D17` | Caution status background |
+| Weak / leaked | `#FF938B` | High-risk status |
+| Weak soft | `#4A2226` | High-risk status background |
 
 Status must never be communicated by color alone. Pair color with Arabic text, state labels, and short explanations.
 
@@ -66,7 +66,7 @@ Keep text right-aligned by default, but render password strings left-to-right. U
 
 ## Privacy copy
 
-The main footer uses:
+The main footer uses the concise privacy statement below. It is displayed in a muted light-gray color against the dark surface:
 
 > التحليل محلي · لا تُرسل كلمة المرور كاملة
 

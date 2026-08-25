@@ -14,28 +14,28 @@
     style.id = STYLE_ID;
     style.textContent = `
       .${MARKER_CLASS} { transition: border-color 160ms ease, box-shadow 160ms ease; }
-      .${MARKER_CLASS}[data-passbit-state="checking"] { border-color: #2563eb !important; box-shadow: 0 0 0 2px #dbe6ff !important; }
-      .${MARKER_CLASS}[data-passbit-state="weak"] { border-color: #ba1a1a !important; box-shadow: 0 0 0 2px #ffdad6 !important; }
-      .${MARKER_CLASS}[data-passbit-state="moderate"] { border-color: #a95400 !important; box-shadow: 0 0 0 2px #fff0d9 !important; }
-      .${MARKER_CLASS}[data-passbit-state="strong"] { border-color: #087f5b !important; box-shadow: 0 0 0 2px #d8f4e8 !important; }
-      .${MARKER_CLASS}[data-passbit-state="leaked"] { border-color: #ba1a1a !important; box-shadow: 0 0 0 2px #ffdad6 !important; }
-      .${MARKER_CLASS}[data-passbit-state="error"] { border-color: #737686 !important; box-shadow: 0 0 0 2px #e5e7ef !important; }
+      .${MARKER_CLASS}[data-passbit-state="checking"] { border-color: #70a7ff !important; box-shadow: 0 0 0 2px #1d3760 !important; }
+      .${MARKER_CLASS}[data-passbit-state="weak"] { border-color: #ff938b !important; box-shadow: 0 0 0 2px #4a2226 !important; }
+      .${MARKER_CLASS}[data-passbit-state="moderate"] { border-color: #f4ba63 !important; box-shadow: 0 0 0 2px #3d2d17 !important; }
+      .${MARKER_CLASS}[data-passbit-state="strong"] { border-color: #5bd8a8 !important; box-shadow: 0 0 0 2px #153d32 !important; }
+      .${MARKER_CLASS}[data-passbit-state="leaked"] { border-color: #ff938b !important; box-shadow: 0 0 0 2px #4a2226 !important; }
+      .${MARKER_CLASS}[data-passbit-state="error"] { border-color: #8f9bad !important; box-shadow: 0 0 0 2px #2b3544 !important; }
       .${ACTION_CLASS}, .${PANEL_CLASS} { direction: rtl; font-family: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif; }
-      .${ACTION_CLASS} { position: fixed; z-index: 2147483646; display: none; border: 1px solid #c3c6d7; border-radius: 6px; padding: 8px 10px; color: #004ac6; background: #ffffff; box-shadow: 0 4px 14px rgba(21,28,39,.14); font-size: 12px; font-weight: 600; cursor: pointer; }
+      .${ACTION_CLASS} { position: fixed; z-index: 2147483646; display: none; border: 1px solid #435064; border-radius: 6px; padding: 8px 10px; color: #9bc2ff; background: #1a212c; box-shadow: 0 4px 14px rgba(0,0,0,.32); font-size: 12px; font-weight: 600; cursor: pointer; }
       .${ACTION_CLASS}[data-visible="true"] { display: block; }
-      .${ACTION_CLASS}:hover { border-color: #2563eb; background: #f0f3ff; }
-      .${PANEL_CLASS} { position: fixed; z-index: 2147483647; display: none; width: min(310px, calc(100vw - 24px)); padding: 14px; border: 1px solid #c3c6d7; border-radius: 8px; color: #151c27; background: #ffffff; box-shadow: 0 8px 24px rgba(21,28,39,.18); font-size: 12px; }
+      .${ACTION_CLASS}:hover { border-color: #70a7ff; background: #232d3c; }
+      .${PANEL_CLASS} { position: fixed; z-index: 2147483647; display: none; width: min(310px, calc(100vw - 24px)); padding: 14px; border: 1px solid #435064; border-radius: 8px; color: #f3f6fb; background: #1a212c; box-shadow: 0 8px 24px rgba(0,0,0,.42); font-size: 12px; }
       .${PANEL_CLASS}[data-visible="true"] { display: block; }
       .${PANEL_CLASS} .passbit-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
-      .${PANEL_CLASS} .passbit-panel-title { margin: 0; color: #151c27; font-size: 14px; font-weight: 600; }
-      .${PANEL_CLASS} .passbit-panel-close { border: 0; padding: 2px 4px; background: transparent; color: #5f6675; font-size: 16px; cursor: pointer; }
-      .${PANEL_CLASS} .passbit-panel-result { margin: 0; color: #004ac6; font-size: 13px; font-weight: 600; }
-      .${PANEL_CLASS} .passbit-panel-breach { margin: 6px 0 0; color: #434655; font-size: 11px; line-height: 1.45; }
+      .${PANEL_CLASS} .passbit-panel-title { margin: 0; color: #f3f6fb; font-size: 14px; font-weight: 600; }
+      .${PANEL_CLASS} .passbit-panel-close { border: 0; padding: 2px 4px; background: transparent; color: #aab4c3; font-size: 16px; cursor: pointer; }
+      .${PANEL_CLASS} .passbit-panel-result { margin: 0; color: #9bc2ff; font-size: 13px; font-weight: 600; }
+      .${PANEL_CLASS} .passbit-panel-breach { margin: 6px 0 0; color: #d0d7e2; font-size: 11px; line-height: 1.45; }
       .${PANEL_CLASS} .passbit-panel-list { display: grid; gap: 5px; margin: 10px 0 0; padding: 0; list-style: none; }
-      .${PANEL_CLASS} .passbit-panel-list li { position: relative; padding-right: 13px; color: #434655; font-size: 11px; line-height: 1.4; }
-      .${PANEL_CLASS} .passbit-panel-list li::before { position: absolute; right: 0; top: 5px; width: 5px; height: 5px; border: 1px solid #2563eb; border-radius: 50%; content: ""; }
-      .${PANEL_CLASS} .passbit-panel-note { margin: 10px 0 0; color: #737686; font-size: 10px; line-height: 1.45; }
-      .${PANEL_CLASS} .passbit-panel-retry { display: none; margin-top: 8px; border: 1px solid #2563eb; border-radius: 6px; padding: 6px 8px; background: #dbe6ff; color: #004ac6; font-size: 10px; font-weight: 600; cursor: pointer; }
+      .${PANEL_CLASS} .passbit-panel-list li { position: relative; padding-right: 13px; color: #d0d7e2; font-size: 11px; line-height: 1.4; }
+      .${PANEL_CLASS} .passbit-panel-list li::before { position: absolute; right: 0; top: 5px; width: 5px; height: 5px; border: 1px solid #70a7ff; border-radius: 50%; content: ""; }
+      .${PANEL_CLASS} .passbit-panel-note { margin: 10px 0 0; color: #8f9bad; font-size: 10px; line-height: 1.45; }
+      .${PANEL_CLASS} .passbit-panel-retry { display: none; margin-top: 8px; border: 1px solid #70a7ff; border-radius: 6px; padding: 6px 8px; background: #1d3760; color: #9bc2ff; font-size: 10px; font-weight: 600; cursor: pointer; }
       .${PANEL_CLASS} .passbit-panel-retry[data-visible="true"] { display: inline-block; }
     `;
     (document.head || document.documentElement).appendChild(style);

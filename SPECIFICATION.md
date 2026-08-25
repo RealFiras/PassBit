@@ -1,13 +1,13 @@
 # PassBit — Zero-Knowledge Entropy & Breach Detector
 
-**Version:** 1.8.1
+**Version:** 1.8.2
 **Author:** Firas — Cybersecurity Student & Web Security Researcher  
 **Platform:** Google Chrome Extension, Manifest V3  
 **Document status:** Production-oriented implementation specification
 
 ## Scope and design intent
 
-PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.8.1 applies the Stitch Modern Utility / Functional Privacy direction: a calm light-first Arabic interface, restrained blue status colors, flat white cards, subtle borders, and a simpler inline panel without neon or glassmorphism. It retains the deeper local pattern analysis, specific improvement guidance, clearer HIBP network states with retry, customizable random-password and passphrase generation, organized vault search and sorting, encrypted-envelope import/export, and configurable vault auto-lock introduced in v1.8.0. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
+PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.8.2 applies the Stitch Modern Utility / Functional Privacy direction in a calm dark mode: charcoal surfaces, slightly lighter cards, restrained blue actions, subtle borders, and a simpler inline panel without neon or glassmorphism. It retains the deeper local pattern analysis, specific improvement guidance, clearer HIBP network states with retry, customizable random-password and passphrase generation, organized vault search and sorting, encrypted-envelope import/export, and configurable vault auto-lock introduced in v1.8.0. The dark palette is a visual update only and does not change the security model. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
 
 The security boundary is explicit. Entropy is a mathematical estimate based on an assumed character pool; it is not a proof that a password is random. The breach result is a corpus lookup; a clean response does not prove that a password has never been exposed elsewhere. The UI uses this language so that users are not given false certainty.
 
@@ -15,19 +15,20 @@ The security boundary is explicit. Entropy is a mathematical estimate based on a
 
 ### 1.1 Product identity
 
-PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.8.1**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
+PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.8.2**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
 
 The core value proposition is a zero-cost, privacy-first Chrome Extension that provides an immediate password-strength estimate, explainable local warnings, and a breach exposure signal directly inside the browser. The extension does not require an account, does not store passwords by default, and does not add analytics or telemetry; an explicitly saved favorite is stored only as authenticated ciphertext. The only outbound request is the privacy-preserving range request needed for the optional breach check.
 
 ### 1.2 Brand direction
 
-The visual language is **Modern Utility / Functional Privacy** in a light-first mode. The product uses flat white cards, a soft near-white surface, restrained blue, thin neutral borders, small structural radii, and clear semantic status colors. It avoids glassmorphism, neon glow, cyberpunk decoration, heavy gradients, and decorative dashboard effects. High-risk states use accessible red, caution uses amber, verified positive states use green, and primary actions use restrained blue.
+The visual language is **Modern Utility / Functional Privacy** in a calm dark mode. The product uses charcoal surfaces, slightly lighter cards, restrained blue, thin low-contrast borders, small structural radii, and clear semantic status colors. It avoids glassmorphism, neon glow, cyberpunk decoration, heavy gradients, and decorative dashboard effects. High-risk states use accessible red, caution uses amber, verified positive states use green, and primary actions use restrained blue.
 
 | Brand token | Visual role | Intended meaning |
 | --- | --- | --- |
-| Soft near-white | Page background | Calm workspace for sensitive input. |
+| Charcoal | Page background | Calm low-glare workspace for sensitive input. |
+| Lighter charcoal | Cards and fields | Separation without heavy shadows. |
 | Restrained Blue | Focus, primary actions, local analysis | Clear interaction and privacy boundary. |
-| Neutral Gray | Borders and metadata | Hierarchy without visual noise. |
+| Muted Gray | Borders and metadata | Hierarchy without visual noise. |
 | Signal Red | Breach or weak-password warning | Immediate action is required. |
 | Amber | Moderate estimate | Caution and improvement opportunity. |
 | Green | Strong estimate or clean query result | Positive signal, not a guarantee. |
@@ -126,15 +127,15 @@ The content script uses a `WeakMap` for per-field UI state and a bounded set onl
 
 ### 4.1 Popup interface
 
-The popup is a compact Arabic RTL security panel with a light near-white background, restrained flat PB mark, one password field, two live measurement tiles, one simple horizontal score indicator adjusted by explainable local pattern checks, one breach-status row with retry, and a collapsed `لماذا ظهرت هذه النتيجة؟` explanation section. The inline page action and panel use the same flat white surface, neutral border, restrained blue, and semantic status colors. The generator supports a customizable random-password mode and a 3–8 word passphrase mode with explicit generate, copy, and use-for-analysis actions. The optional encrypted favorites vault opens as a separate view with search, sorting, auto-lock selection, encrypted-envelope import/export, and delete controls. The main screen avoids ambiguous icons and technical paragraphs.
+The popup is a compact Arabic RTL security panel with a calm charcoal background, restrained flat PB mark, slightly lighter cards, one password field, two live measurement tiles, one simple horizontal score indicator adjusted by explainable local pattern checks, one breach-status row with retry, and a collapsed `لماذا ظهرت هذه النتيجة؟` explanation section. The inline page action and panel use the same dark card surface, neutral border, restrained blue, and semantic status colors. The generator supports a customizable random-password mode and a 3–8 word passphrase mode with explicit generate, copy, and use-for-analysis actions. The optional encrypted favorites vault opens as a separate view with search, sorting, auto-lock selection, encrypted-envelope import/export, and delete controls. The main screen avoids ambiguous icons and technical paragraphs.
 
 | UI region | Behavior | Accessibility expectation |
 | --- | --- | --- |
-| Header | Shows PassBit, version 1.8.1, and a restrained flat PB mark. | Brand text remains available independently of the mark. |
+| Header | Shows PassBit, version 1.8.2, and a restrained flat PB mark. | Brand text remains available independently of the mark. |
 | Password input | Accepts a value locally and updates length, character diversity, score, advice, and breach status after each input event. | Visible label, autocomplete hint, focus ring, and password type by default. |
 | Show/HIDE control | Toggles visibility only while the popup remains open. | Button label and `aria-pressed` state change together. |
 | Live measurements | Shows actual Unicode length and the number of active character groups out of four. | The values are text, not color-only indicators. |
-| Dynamic score | Shows a 0–100 normalized display based on effective estimated entropy after transparent local pattern penalties, while the details expose the reason. | The result label, local estimate wording, and explanation remain visible beside the ring. |
+| Dynamic score | Shows a 0–100 normalized display based on effective estimated entropy after transparent local pattern penalties, while the details expose the reason. | The result label, local estimate wording, and explanation remain visible beside the horizontal indicator. |
 | Main result | Shows Arabic Weak, Moderate, or Strong guidance in plain language. | The action text is visible and not color-only. |
 | Breach status | Shows checking, clean result, hit count, timeout/network/rate-limit/unavailable states, and a retry action. | Status updates are written into a live region and unavailable is never presented as clean. |
 | Generator | Creates a customizable random password or 3–8 word passphrase locally using cryptographic randomness. | Mode, length/word count, separator, output, and copy/use controls are explicit. |
@@ -147,7 +148,7 @@ The main result card is actionable rather than merely decorative. A weak result 
 
 ### 4.2 Inline page integration
 
-On normal web pages, PassBit identifies password inputs and listens for a user double-click. The double-click displays a small `PB · فحص` action beside the field. Clicking that action opens an inline panel showing the Arabic strength result, breach status, and improvement suggestions. The field receives a matching light semantic border after the check without neon glow or decorative shadow. The panel closes when the user clicks elsewhere, the action times out, the user closes it, or the field value changes. The page's original value is never replaced and the extension does not submit forms.
+On normal web pages, PassBit identifies password inputs and listens for a user double-click. The double-click displays a small `PB · فحص` action beside the field. Clicking that action opens an inline panel showing the Arabic strength result, breach status, and improvement suggestions. The field receives a matching dark-mode semantic border after the check without neon glow or decorative shadow. The panel closes when the user clicks elsewhere, the action times out, the user closes it, or the field value changes. The page's original value is never replaced and the extension does not submit forms.
 
 | Border state | Meaning | Visual treatment |
 | --- | --- | --- |

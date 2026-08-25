@@ -1,14 +1,14 @@
 # PassBit
 
-**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version 1.8.1 adds a calm light-first Arabic interface based on the PassBit Stitch design system, deeper local pattern analysis, a cryptographically random customizable password/passphrase generator, actionable improvement suggestions, clearer HIBP retry states, a double-click quick-scan chip beside password fields, a restrained PB brand mark, and an opt-in encrypted local favorites vault with search and transfer controls. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
+**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version 1.8.2 adds a calm dark Arabic interface based on the PassBit Stitch design system, deeper local pattern analysis, a cryptographically random customizable password/passphrase generator, actionable improvement suggestions, clearer HIBP retry states, a double-click quick-scan chip beside password fields, a restrained PB brand mark, and an opt-in encrypted local favorites vault with search and transfer controls. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
 
 > PassBit is a defensive decision aid. A clean breach response does not prove that a password is safe, and entropy is an estimate rather than a guarantee.
 
 ## What is included
 
-The extension package contains `manifest.json` for the MV3 declaration, `entropy.js` for local character-pool, raw/effective entropy, pattern findings, and password/passphrase generator logic, `vault.js` for PBKDF2/AES-GCM encrypted favorites and envelope transfer, `service-worker.js` for local SHA-1 hashing and the range request, `content.js` for password-field integration and the double-click quick-scan chip, and `popup/` for the Arabic user interface, generator, suggestions, HIBP retry states, and vault controls. The `icons/` directory contains the generated brand icons. `SPECIFICATION.md` contains the full technical design and security model, while `DESIGN_SYSTEM.md` records the Stitch-based light utility visual rules and tokens.
+The extension package contains `manifest.json` for the MV3 declaration, `entropy.js` for local character-pool, raw/effective entropy, pattern findings, and password/passphrase generator logic, `vault.js` for PBKDF2/AES-GCM encrypted favorites and envelope transfer, `service-worker.js` for local SHA-1 hashing and the range request, `content.js` for password-field integration and the double-click quick-scan chip, and `popup/` for the Arabic user interface, generator, suggestions, HIBP retry states, and vault controls. The `icons/` directory contains the generated brand icons. `SPECIFICATION.md` contains the full technical design and security model, while `DESIGN_SYSTEM.md` records the Stitch-based dark utility visual rules and tokens.
 
-## Version 1.8.1 user flow
+## Version 1.8.2 user flow
 
 The popup is intentionally short and explicit. Step 1 is the password field. The two tiles show the actual length and character diversity. Step 2 is the calculated local estimate after transparent pattern penalties, followed by the breach-status row. Open **لماذا ظهرت هذه النتيجة؟** to see the local reasons behind the score, including common passwords, repeated characters or chunks, sequences, keyboard walks, dates, phone-like numbers, simple substitutions, and site-context matches when available. The generator now offers **كلمة عشوائية** with a selectable length or **عبارة مرور** with 3–8 random words and a selectable separator. **توليد** makes a fresh value, **نسخ** copies it, and **استخدمها للفحص** places it into the analyzer. The top-right button is labeled **المفضلة** and opens the optional encrypted favorites vault.
 
@@ -44,13 +44,13 @@ The estimate does not model every site-specific password rule, leaked fragment, 
 
 ## Design system
 
-The popup and inline panel use the Stitch **Modern Utility / Functional Privacy** direction: a light surface, restrained blue, thin borders, small corner radii, and readable RTL spacing. The interface avoids glassmorphism, neon glow, cyberpunk decoration, heavy gradients, and unexplained icon-only actions. The full token and component reference is in `DESIGN_SYSTEM.md`.
+The popup and inline panel use the Stitch **Modern Utility / Functional Privacy** direction: a calm charcoal surface, slightly lighter cards, restrained blue, thin borders, small corner radii, and readable RTL spacing. The interface avoids glassmorphism, neon glow, cyberpunk decoration, heavy gradients, and unexplained icon-only actions. The full token and component reference is in `DESIGN_SYSTEM.md`.
 
 ## Additional local checks
 
 Beyond the Pwned Passwords lookup, PassBit checks patterns entirely on the device. It detects common passwords, repeated characters, repeated chunks, ascending or descending sequences, keyboard walks such as `qwerty`, year/date-like values, simple substitutions such as `p@ssw0rd`, and words related to the current page or field when the inline scanner has that context. The popup exposes these reasons under **لماذا ظهرت هذه النتيجة؟** so the score is explainable rather than a black box. No extra network service receives the password or page context.
 
-## v1.8.1 controls
+## v1.8.2 controls
 
 The generator uses `crypto.getRandomValues` for both random-password and passphrase modes. A random password forces lowercase, uppercase, digits, and symbols before shuffling. A passphrase selects words from a bundled local list; it is not a phrase downloaded from a server. The vault search, sorting, timeout selection, and encrypted-envelope transfer all run inside the popup.
 
@@ -64,7 +64,7 @@ Publish the project under the MIT License by adding a `LICENSE` file that contai
 
 ## Development checklist
 
-The extension should be tested in a clean Chrome profile and in a profile with strict privacy settings. Confirm that the compact popup handles empty input, Unicode characters, long input, show/hide behavior, live length/diversity measurements, score-ring updates, random-password length choices, passphrase word-count/separator choices, generator output, vault creation, wrong-passphrase rejection, lock/unlock, timeout lock, local search/sort, encrypted import/export, delete confirmation, network failure, timeout, rate limit, HTTP failure, a known test password, and a clean result. Confirm that password values do not appear in DevTools logs, URLs, or repository files, and that extension storage contains only an encrypted envelope after a favorite is saved.
+The extension should be tested in a clean Chrome profile and in a profile with strict privacy settings. Confirm that the compact popup handles empty input, Unicode characters, long input, show/hide behavior, live length/diversity measurements, score-indicator updates, random-password length choices, passphrase word-count/separator choices, generator output, vault creation, wrong-passphrase rejection, lock/unlock, timeout lock, local search/sort, encrypted import/export, delete confirmation, network failure, timeout, rate limit, HTTP failure, a known test password, and a clean result. Confirm that password values do not appear in DevTools logs, URLs, or repository files, and that extension storage contains only an encrypted envelope after a favorite is saved.
 
 The manifest grants the `storage` permission for the encrypted favorites envelope, the Pwned Passwords API host, plus the page access needed for inline password-field analysis. No permissions are requested for tabs, history, cookies, scripting, or identity. Page access is used for password-field feedback, the double-click chip, and the inline suggestion panel; the extension does not submit forms or change their values.
 
