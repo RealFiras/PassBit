@@ -1,29 +1,30 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
+  const checkView = document.getElementById("check-view");
+  const vaultView = document.getElementById("vault-view");
+  const openVaultButton = document.getElementById("open-vault");
+  const closeVaultButton = document.getElementById("close-vault");
   const passwordInput = document.getElementById("password-input");
   const toggleButton = document.getElementById("toggle-password");
-  const entropyValue = document.getElementById("entropy-value");
-  const poolValue = document.getElementById("pool-value");
+  const lengthValue = document.getElementById("length-value");
+  const typesValue = document.getElementById("types-value");
   const lengthLabel = document.getElementById("length-label");
+  const typesLabel = document.getElementById("types-label");
   const resultCard = document.getElementById("result-card");
-  const resultIcon = document.getElementById("result-icon");
+  const scoreRing = document.getElementById("score-ring");
+  const scoreValue = document.getElementById("score-value");
   const resultTitle = document.getElementById("result-title");
   const resultDescription = document.getElementById("result-description");
-  const strengthBadge = document.getElementById("strength-badge");
   const breachIcon = document.getElementById("breach-icon");
   const breachValue = document.getElementById("breach-value");
-  const suggestionsList = document.getElementById("suggestions-list");
-  const suggestionCount = document.getElementById("suggestion-count");
+  const tipLine = document.getElementById("tip-line");
+  const generatorPanel = document.getElementById("generator-panel");
   const generateButton = document.getElementById("generate-password");
   const generatedOutput = document.getElementById("generated-password");
   const copyGeneratedButton = document.getElementById("copy-generated");
   const useGeneratedButton = document.getElementById("use-generated");
   const copyFeedback = document.getElementById("copy-feedback");
-  const favoriteNameInput = document.getElementById("favorite-name");
-  const favoriteUsernameInput = document.getElementById("favorite-username");
-  const saveFavoriteButton = document.getElementById("save-favorite");
-  const saveFeedback = document.getElementById("save-feedback");
   const setupSection = document.getElementById("vault-setup");
   const lockedSection = document.getElementById("vault-locked");
   const unlockedSection = document.getElementById("vault-unlocked");
@@ -36,10 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const unlockFeedback = document.getElementById("unlock-feedback");
   const lockButton = document.getElementById("lock-vault");
   const deleteVaultButton = document.getElementById("delete-vault");
+  const favoriteNameInput = document.getElementById("favorite-name");
+  const favoriteUsernameInput = document.getElementById("favorite-username");
+  const saveFavoriteButton = document.getElementById("save-favorite");
+  const saveFeedback = document.getElementById("save-feedback");
   const favoriteList = document.getElementById("favorite-list");
   const vaultCount = document.getElementById("vault-count");
-  const tabButtons = Array.from(document.querySelectorAll(".tab[data-tab]"));
-  const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
 
   let breachRequestId = 0;
   let breachTimer = 0;
@@ -52,102 +55,80 @@ document.addEventListener("DOMContentLoaded", () => {
     element.className = classes.filter(Boolean).join(" ");
   }
 
-  function showTab(tabId) {
-    tabButtons.forEach((button) => button.classList.toggle("active", button.dataset.tab === tabId));
-    tabPanels.forEach((panel) => { panel.hidden = panel.id !== tabId; });
-    if (tabId === "favorites-view") refreshVaultState();
+  function updateScore(value) {
+    const score = Math.max(0, Math.min(100, Number(value) || 0));
+    scoreValue.textContent = String(score);
+    scoreRing.style.setProperty("--score", `${score * 3.6}deg`);
   }
 
-  function renderSuggestions(suggestions) {
-    const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
-    suggestionsList.replaceChildren();
-    suggestionCount.textContent = String(safeSuggestions.length);
-    if (safeSuggestions.length === 0) {
-      const item = document.createElement("li");
-      item.className = "empty-suggestion";
-      item.textContent = "لا توجد اقتراحات إضافية.";
-      suggestionsList.appendChild(item);
-      return;
-    }
-    safeSuggestions.slice(0, 5).forEach((suggestion) => {
-      const item = document.createElement("li");
-      item.textContent = suggestion;
-      suggestionsList.appendChild(item);
-    });
-  }
-
-  function updateSaveButton() {
-    saveFavoriteButton.disabled = !passwordInput.value;
+  function showView(view) {
+    const showingVault = view === "vault";
+    checkView.hidden = showingVault;
+    vaultView.hidden = !showingVault;
+    if (showingVault) refreshVaultState();
   }
 
   function renderEmpty() {
     currentBand = "neutral";
-    entropyValue.textContent = "0.0";
-    poolValue.textContent = "0";
-    lengthLabel.textContent = "لم تكتب شيئًا بعد";
+    lengthValue.textContent = "0";
+    typesValue.textContent = "0";
+    lengthLabel.textContent = "0 حرف";
+    typesLabel.textContent = "0 من 4 أنواع";
+    updateScore(0);
     setClasses(resultCard, "result-card", "neutral");
-    resultIcon.textContent = "؟";
-    resultTitle.textContent = "جاهز للفحص";
-    resultDescription.textContent = "اكتب كلمة المرور لترى النتيجة.";
-    setClasses(strengthBadge, "strength-badge", "neutral");
-    strengthBadge.textContent = "—";
-    breachIcon.className = "breach-symbol";
+    resultTitle.textContent = "بانتظار كلمة المرور";
+    resultDescription.textContent = "سنحسب القوة بناءً على الطول والتنوع.";
+    breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
-    breachValue.textContent = "بانتظار الإدخال";
-    renderSuggestions([]);
-    updateSaveButton();
+    breachValue.textContent = "لم يبدأ بعد";
+    tipLine.textContent = "استخدم 14 حرفًا أو أكثر، واجعلها فريدة.";
+    saveFavoriteButton.disabled = true;
   }
 
   function renderLocalAnalysis(result) {
+    const types = Object.values(result.characterSets).filter(Boolean).length;
     currentBand = result.band.id;
-    entropyValue.textContent = result.entropyBits.toFixed(1);
-    poolValue.textContent = String(result.poolSize);
-    lengthLabel.textContent = `${result.length} ${result.length === 1 ? "حرف" : "أحرف"}`;
+    lengthValue.textContent = String(result.length);
+    typesValue.textContent = String(types);
+    lengthLabel.textContent = `${result.length} حرف`;
+    typesLabel.textContent = `${types} من 4 أنواع`;
+    updateScore(result.progressPercent);
     setClasses(resultCard, "result-card", result.band.id);
-    resultIcon.textContent = result.band.id === "strong" ? "✓" : result.band.id === "moderate" ? "!" : "×";
     resultTitle.textContent = `كلمة المرور ${result.band.labelAr}`;
     resultDescription.textContent = result.band.adviceAr;
-    setClasses(strengthBadge, "strength-badge", result.band.id);
-    strengthBadge.textContent = result.band.labelAr;
-    breachIcon.className = "breach-symbol";
+    breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
     breachValue.textContent = "جارٍ الفحص…";
-    renderSuggestions(result.suggestionsAr);
-    updateSaveButton();
+    tipLine.textContent = result.suggestionsAr[0] || "ممتاز. لا تعِد استخدام كلمة المرور.";
+    saveFavoriteButton.disabled = false;
   }
 
   function renderBreachError() {
-    breachIcon.className = "breach-symbol";
+    breachIcon.className = "breach-icon";
     breachIcon.textContent = "◇";
-    breachValue.textContent = "تعذر الاتصال بالخدمة";
+    breachValue.textContent = "تعذر الفحص الآن";
     setClasses(resultCard, "result-card", "error");
-    resultIcon.textContent = "!";
-    resultTitle.textContent = `تحليل القوة: ${currentBand === "strong" ? "قوية" : currentBand === "moderate" ? "متوسطة" : "ضعيفة"}`;
-    resultDescription.textContent = "تعذر فحص التسريبات الآن. لم نعتبرها نظيفة.";
+    resultTitle.textContent = `القوة: ${currentBand === "strong" ? "قوية" : currentBand === "moderate" ? "متوسطة" : "ضعيفة"}`;
+    resultDescription.textContent = "التقييم محسوب محليًا، لكن فحص التسريب غير متاح الآن.";
   }
 
   function renderBreachResult(result) {
     if (result.status === "leaked") {
-      breachIcon.className = "breach-symbol leaked";
+      breachIcon.className = "breach-icon leaked";
       breachIcon.textContent = "!";
       breachValue.textContent = `ظهرت ${result.count.toLocaleString("ar-EG")} مرة`;
       setClasses(resultCard, "result-card", "leaked");
-      resultIcon.textContent = "!";
       resultTitle.textContent = "لا تستخدمها — ظهرت في تسريب";
-      resultDescription.textContent = "غيّرها فورًا في كل حساب استخدمتها فيه، ولا تعِد استخدامها.";
+      resultDescription.textContent = "غيّرها فورًا ولا تعِد استخدامها.";
       return;
     }
     if (result.status === "clean") {
-      breachIcon.className = "breach-symbol clean";
+      breachIcon.className = "breach-icon clean";
       breachIcon.textContent = "✓";
       breachValue.textContent = "لم تظهر في التسريبات المعروفة";
-      const cardState = currentBand === "strong" ? "clean" : currentBand;
-      setClasses(resultCard, "result-card", cardState);
-      resultIcon.textContent = currentBand === "strong" ? "✓" : "!";
-      resultTitle.textContent = currentBand === "strong" ? "ممتاز — لم تظهر في التسريبات" : "لم تظهر في التسريبات، لكنها تحتاج تحسينًا";
-      resultDescription.textContent = currentBand === "strong"
-        ? "هذه إشارة جيدة وليست ضمانًا كاملًا. اجعلها فريدة دائمًا."
-        : "لم نجدها في قاعدة التسريبات، لكن طبّق الاقتراحات لتحسينها.";
+      setClasses(resultCard, "result-card", currentBand);
+      resultTitle.textContent = currentBand === "strong" ? "قوية ولم تظهر في التسريبات" : `القوة ${currentBand === "moderate" ? "متوسطة" : "ضعيفة"}`;
+      resultDescription.textContent = currentBand === "strong" ? "نتيجة جيدة. اجعلها فريدة دائمًا." : "لم تظهر في التسريبات، لكن حسّنها حسب النصيحة.";
       return;
     }
     renderBreachError();
@@ -161,9 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     breachTimer = window.setTimeout(() => {
-      breachIcon.className = "breach-symbol";
-      breachIcon.textContent = "…";
-      breachValue.textContent = "جارٍ فحص التسريبات…";
       chrome.runtime.sendMessage({ type: "PASSBIT_CHECK_BREACH", password }, (response) => {
         if (requestId !== breachRequestId) return;
         if (chrome.runtime.lastError || !response || !response.ok) {
@@ -175,14 +153,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 280);
   }
 
-  async function copyGeneratedPassword() {
-    if (!generatedPassword) return;
+  async function copyText(value, feedbackElement) {
     try {
-      await navigator.clipboard.writeText(generatedPassword);
-      copyFeedback.textContent = "تم النسخ.";
-      window.setTimeout(() => { copyFeedback.textContent = ""; }, 2200);
+      await navigator.clipboard.writeText(value);
+      feedbackElement.textContent = "تم النسخ.";
+      window.setTimeout(() => { feedbackElement.textContent = ""; }, 1800);
     } catch (error) {
-      copyFeedback.textContent = "تعذر النسخ؛ حدّد النص يدويًا.";
+      feedbackElement.textContent = "تعذر النسخ؛ حدّد النص يدويًا.";
     }
   }
 
@@ -196,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderVaultFavorites() {
     favoriteList.replaceChildren();
-    vaultCount.textContent = favorites.length === 0 ? "لا توجد كلمات محفوظة." : `${favorites.length} محفوظة ومشفّرة`;
+    vaultCount.textContent = favorites.length ? `${favorites.length} محفوظة ومشفّرة` : "لا توجد كلمات محفوظة";
     favorites.forEach((favorite) => {
       const item = document.createElement("article");
       item.className = "favorite-item";
@@ -204,13 +181,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const top = document.createElement("div");
       top.className = "favorite-top";
-      const title = document.createElement("span");
-      title.className = "favorite-name";
-      title.textContent = favorite.name;
-      const user = document.createElement("span");
-      user.className = "favorite-user";
-      user.textContent = favorite.username || "بدون اسم مستخدم";
-      top.append(title, user);
+      const name = document.createElement("strong");
+      name.className = "favorite-name";
+      name.textContent = favorite.name;
+      const username = document.createElement("span");
+      username.className = "favorite-user";
+      username.textContent = favorite.username || "بدون مستخدم";
+      top.append(name, username);
 
       const password = document.createElement("input");
       password.className = "favorite-password";
@@ -221,11 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const actions = document.createElement("div");
       actions.className = "favorite-actions";
-      [
-        ["toggle", "إظهار"],
-        ["copy", "نسخ"],
-        ["delete", "حذف"],
-      ].forEach(([action, label]) => {
+      [["toggle", "إظهار"], ["copy", "نسخ"], ["delete", "حذف"]].forEach(([action, label]) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = action === "delete" ? "danger-button" : "secondary-button";
@@ -233,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
         button.textContent = label;
         actions.appendChild(button);
       });
-
       item.append(top, password, actions);
       favoriteList.appendChild(item);
     });
@@ -250,13 +222,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function setupVault() {
     const passphrase = setupPassphrase.value;
-    const confirmation = setupConfirm.value;
     setupFeedback.textContent = "";
     if (passphrase.length < 12) {
-      setupFeedback.textContent = "استخدم عبارة من 12 حرفًا على الأقل.";
+      setupFeedback.textContent = "استخدم 12 حرفًا على الأقل.";
       return;
     }
-    if (passphrase !== confirmation) {
+    if (passphrase !== setupConfirm.value) {
       setupFeedback.textContent = "العبارتان غير متطابقتين.";
       return;
     }
@@ -267,10 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
       favorites = [];
       setupPassphrase.value = "";
       setupConfirm.value = "";
-      setupFeedback.textContent = "تم إنشاء الخزنة.";
       await refreshVaultState();
     } catch (error) {
-      setupFeedback.textContent = "تعذر إنشاء الخزنة. حاول مرة أخرى.";
+      setupFeedback.textContent = "تعذر إنشاء الخزنة.";
     } finally {
       setupButton.disabled = false;
     }
@@ -285,13 +255,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     unlockButton.disabled = true;
     try {
-      const envelope = await readVaultEnvelope();
-      favorites = await globalThis.PassBitVault.decryptRecords(passphrase, envelope);
+      favorites = await globalThis.PassBitVault.decryptRecords(passphrase, await readVaultEnvelope());
       vaultPassphrase = passphrase;
       unlockPassphrase.value = "";
       await refreshVaultState();
     } catch (error) {
-      unlockFeedback.textContent = "العبارة غير صحيحة أو الخزنة تالفة.";
+      unlockFeedback.textContent = "العبارة غير صحيحة.";
     } finally {
       unlockButton.disabled = false;
     }
@@ -300,22 +269,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function lockVault() {
     vaultPassphrase = "";
     favorites = [];
-    unlockPassphrase.value = "";
     refreshVaultState();
   }
 
   async function saveFavorite() {
     saveFeedback.textContent = "";
-    if (!passwordInput.value) return;
     if (!vaultPassphrase) {
-      saveFeedback.textContent = "افتح تبويب المفضلة وأنشئ أو افتح خزنتك أولًا.";
-      showTab("favorites-view");
+      saveFeedback.textContent = "افتح الخزنة أولًا.";
       return;
     }
     const name = favoriteNameInput.value.trim();
-    if (!name) {
-      saveFeedback.textContent = "اكتب اسم الخدمة أولًا.";
-      favoriteNameInput.focus();
+    if (!name || !passwordInput.value) {
+      saveFeedback.textContent = "اكتب اسم الخدمة وافحص كلمة المرور أولًا.";
       return;
     }
     const record = {
@@ -326,16 +291,14 @@ document.addEventListener("DOMContentLoaded", () => {
       createdAt: Date.now(),
     };
     favorites = [record, ...favorites].slice(0, globalThis.PassBitVault.MAX_RECORDS);
-    saveFavoriteButton.disabled = true;
     try {
       await globalThis.PassBitVault.saveRecords(vaultPassphrase, favorites);
       favoriteNameInput.value = "";
       favoriteUsernameInput.value = "";
-      saveFeedback.textContent = "تم الحفظ داخل الخزنة المشفّرة.";
+      saveFeedback.textContent = "تم الحفظ مشفّرًا.";
+      renderVaultFavorites();
     } catch (error) {
-      saveFeedback.textContent = "تعذر الحفظ. لم يتم تغيير الخزنة.";
-    } finally {
-      updateSaveButton();
+      saveFeedback.textContent = "تعذر الحفظ.";
     }
   }
 
@@ -343,29 +306,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const button = event.target.closest("button[data-favorite-action]");
     if (!button) return;
     const item = button.closest(".favorite-item");
-    if (!item) return;
-    const favorite = favorites.find((entry) => entry.id === item.dataset.id);
+    const favorite = favorites.find((entry) => entry.id === item?.dataset.id);
     if (!favorite) return;
-
     if (button.dataset.favoriteAction === "toggle") {
-      const password = item.querySelector(".favorite-password");
-      const showing = password.type === "text";
-      password.type = showing ? "password" : "text";
+      const field = item.querySelector(".favorite-password");
+      const showing = field.type === "text";
+      field.type = showing ? "password" : "text";
       button.textContent = showing ? "إظهار" : "إخفاء";
       return;
     }
     if (button.dataset.favoriteAction === "copy") {
-      try {
-        await navigator.clipboard.writeText(favorite.password);
-        button.textContent = "تم النسخ";
-        window.setTimeout(() => { button.textContent = "نسخ"; }, 1800);
-      } catch (error) {
-        button.textContent = "تعذر النسخ";
-      }
+      await copyText(favorite.password, button);
       return;
     }
-    if (button.dataset.favoriteAction === "delete") {
-      if (!window.confirm(`حذف ${favorite.name} من الخزنة؟`)) return;
+    if (button.dataset.favoriteAction === "delete" && window.confirm(`حذف ${favorite.name}؟`)) {
       favorites = favorites.filter((entry) => entry.id !== favorite.id);
       await globalThis.PassBitVault.saveRecords(vaultPassphrase, favorites);
       renderVaultFavorites();
@@ -373,11 +327,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function deleteVault() {
-    if (!window.confirm("سيتم حذف الخزنة وكل كلماتها نهائيًا. هل تريد المتابعة؟")) return;
+    if (!window.confirm("حذف الخزنة وكل كلماتها نهائيًا؟")) return;
     await globalThis.PassBitVault.deleteVault();
     vaultPassphrase = "";
     favorites = [];
-    setupFeedback.textContent = "تم حذف الخزنة والبيانات.";
+    setupFeedback.textContent = "تم حذف الخزنة.";
     await refreshVaultState();
   }
 
@@ -399,28 +353,29 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleButton.setAttribute("aria-label", showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
     toggleButton.setAttribute("aria-pressed", String(showPassword));
   });
-
-  tabButtons.forEach((button) => button.addEventListener("click", () => showTab(button.dataset.tab)));
+  openVaultButton.addEventListener("click", () => showView("vault"));
+  closeVaultButton.addEventListener("click", () => showView("check"));
   generateButton.addEventListener("click", () => {
-    generatedPassword = globalThis.PassBitEntropy.generateStrongPassword();
-    generatedOutput.textContent = generatedPassword;
-    copyGeneratedButton.disabled = false;
-    useGeneratedButton.disabled = false;
-    copyFeedback.textContent = "تم التوليد داخل المتصفح.";
-    window.setTimeout(() => { copyFeedback.textContent = ""; }, 2200);
+    if (!generatedPassword) {
+      generatedPassword = globalThis.PassBitEntropy.generateStrongPassword();
+      generatedOutput.textContent = generatedPassword;
+      copyGeneratedButton.disabled = false;
+      useGeneratedButton.disabled = false;
+    }
+    generatorPanel.hidden = !generatorPanel.hidden;
+    generateButton.textContent = generatorPanel.hidden ? "توليد كلمة قوية" : "إخفاء المولّد";
   });
-  copyGeneratedButton.addEventListener("click", copyGeneratedPassword);
+  copyGeneratedButton.addEventListener("click", () => copyText(generatedPassword, copyFeedback));
   useGeneratedButton.addEventListener("click", () => {
-    if (!generatedPassword) return;
     passwordInput.value = generatedPassword;
     passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
-    passwordInput.focus();
+    showView("check");
   });
-  saveFavoriteButton.addEventListener("click", saveFavorite);
   setupButton.addEventListener("click", setupVault);
   unlockButton.addEventListener("click", unlockVault);
   lockButton.addEventListener("click", lockVault);
   deleteVaultButton.addEventListener("click", deleteVault);
+  saveFavoriteButton.addEventListener("click", saveFavorite);
   favoriteList.addEventListener("click", handleFavoriteAction);
 
   renderEmpty();

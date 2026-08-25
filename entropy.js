@@ -1,5 +1,5 @@
 /*
- * PassBit v1.1.0 — local password analysis engine
+ * PassBit v1.3.0 — local password analysis engine
  * Author: Firas
  */
 (function (root) {
