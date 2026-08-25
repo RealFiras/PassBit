@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const score = Math.max(0, Math.min(100, Number(value) || 0));
     scoreValue.textContent = String(score);
     scoreRing.style.setProperty("--score", `${score * 3.6}deg`);
+    scoreRing.style.setProperty("--score-percent", `${score}%`);
   }
 
   function renderEmpty() {
