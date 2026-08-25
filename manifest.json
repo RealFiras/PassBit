@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PassBit - Zero-Knowledge Entropy & Breach Detector",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "description": "Arabic-first private password checker with a calm dark interface, local pattern scoring, customizable generators, and encrypted local favorites by Firas.",
   "author": "Firas",
   "minimum_chrome_version": "88",

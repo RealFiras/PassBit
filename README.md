@@ -1,12 +1,10 @@
 # PassBit
 
-![PassBit logo](assets/passbit-logo.png)
-
-![PassBit GitHub hero](assets/passbit-github-hero.png)
+![PassBit project cover](assets/passbit-project-cover.png)
 
 > **PassBit — حماية كلمات المرور ببساطة.** أداة عربية RTL لفحص قوة كلمات المرور محليًا، والتحقق من التسريبات دون إرسال كلمة المرور كاملة، وتوليد كلمات مرور قوية وحفظ المفضلة داخل خزنة مشفّرة اختياريًا.
 
-**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version 1.8.7 keeps the calm dark Arabic interface based on the PassBit Stitch design system and adds a dedicated PassBit brand logo plus a usage mockup for the project documentation. It includes deeper local pattern analysis, a cryptographically random customizable password/passphrase generator, actionable improvement suggestions, clearer HIBP retry states, a double-click quick-scan chip beside password fields, and an opt-in encrypted local favorites vault with search and transfer controls. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
+**PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version 1.8.8 keeps the calm dark Arabic interface based on the PassBit Stitch design system and adds a dedicated PassBit brand logo plus a usage mockup for the project documentation. It includes deeper local pattern analysis, a cryptographically random customizable password/passphrase generator, actionable improvement suggestions, clearer HIBP retry states, a double-click quick-scan chip beside password fields, and an opt-in encrypted local favorites vault with search and transfer controls. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
 
 > PassBit is a defensive decision aid. A clean breach response does not prove that a password is safe, and entropy is an estimate rather than a guarantee.
 
@@ -39,7 +37,7 @@ PassBit is built around one clear promise: **افحص، افهم، وحسّن ك
 
 The extension package contains `manifest.json` for the MV3 declaration, `entropy.js` for local character-pool, raw/effective entropy, pattern findings, and password/passphrase generator logic, `vault.js` for PBKDF2/AES-GCM encrypted favorites and envelope transfer, `service-worker.js` for local SHA-1 hashing and the range request, `content.js` for password-field integration and the double-click quick-scan chip, and `popup/` for the Arabic user interface, generator, suggestions, HIBP retry states, and vault controls. The `icons/` directory contains the generated brand icons. `SPECIFICATION.md` contains the full technical design and security model, while `DESIGN_SYSTEM.md` records the Stitch-based dark utility visual rules and tokens. The popup layout follows the supplied Stitch image-to-code export: a compact 400×563 dark container, lock/PassBit header, gear control, crisp local SVG eye/copy actions, icon measurement tiles, four-segment horizontal strength bar, HIBP status row with chevron, expandable reason row, key generator row, and a masked favorites preview.
 
-## Version 1.8.7 user flow
+## Version 1.8.8 user flow
 
 The popup is intentionally short and explicit. Step 1 is the password field. The two tiles show the actual length and character diversity. Step 2 is the calculated local estimate after transparent pattern penalties, followed by the breach-status row. Open **لماذا ظهرت هذه النتيجة؟** to see the local reasons behind the score, including common passwords, repeated characters or chunks, sequences, keyboard walks, dates, phone-like numbers, simple substitutions, and site-context matches when available. The generator now offers **كلمة عشوائية** with a selectable length or **عبارة مرور** with 3–8 random words and a selectable separator. **توليد** makes a fresh value, **نسخ** copies it, and **استخدمها للفحص** places it into the analyzer. The top-right button is labeled **المفضلة** and opens the optional encrypted favorites vault.
 
@@ -81,7 +79,7 @@ The popup and inline panel use the Stitch **Modern Utility / Functional Privacy*
 
 Beyond the Pwned Passwords lookup, PassBit checks patterns entirely on the device. It detects common passwords, repeated characters, repeated chunks, ascending or descending sequences, keyboard walks such as `qwerty`, year/date-like values, simple substitutions such as `p@ssw0rd`, and words related to the current page or field when the inline scanner has that context. The popup exposes these reasons under **لماذا ظهرت هذه النتيجة؟** so the score is explainable rather than a black box. No extra network service receives the password or page context.
 
-## v1.8.7 controls
+## v1.8.8 controls
 
 The generator uses `crypto.getRandomValues` for both random-password and passphrase modes. A random password forces lowercase, uppercase, digits, and symbols before shuffling. A passphrase selects words from a bundled local list; it is not a phrase downloaded from a server. The vault search, sorting, timeout selection, and encrypted-envelope transfer all run inside the popup.
 

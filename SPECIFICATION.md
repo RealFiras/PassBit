@@ -1,13 +1,13 @@
 # PassBit — Zero-Knowledge Entropy & Breach Detector
 
-**Version:** 1.8.7
+**Version:** 1.8.8
 **Author:** Firas — Cybersecurity Student & Web Security Researcher  
 **Platform:** Google Chrome Extension, Manifest V3  
 **Document status:** Production-oriented implementation specification
 
 ## Scope and design intent
 
-PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.8.7 applies the Stitch image-to-code export as the live popup structure in the Stitch Modern Utility / Functional Privacy direction in a calm dark mode and maps the GitHub Hero reference into the live popup: a compact 400×563 header, crisp local SVG eye/copy input actions, icon measurement tiles, four-segment horizontal strength bar, HIBP row with chevron, expandable reason row, generator row, and masked favorites preview. It uses charcoal surfaces, slightly lighter cards, restrained blue actions, subtle borders, and a simpler inline panel without neon or glassmorphism. It retains the deeper local pattern analysis, specific improvement guidance, clearer HIBP network states with retry, customizable random-password and passphrase generation, organized vault search and sorting, encrypted-envelope import/export, and configurable vault auto-lock introduced in v1.8.0. The dark palette is a visual update only and does not change the security model. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
+PassBit is a privacy-first browser extension that estimates password strength locally, checks whether the exact password has appeared in the Pwned Passwords corpus without sending the password or its complete hash to a remote service, generates strong passwords locally, and optionally stores favorites in an authenticated encrypted local vault. Version 1.8.8 applies the Stitch image-to-code export as the live popup structure in the Stitch Modern Utility / Functional Privacy direction in a calm dark mode and maps the GitHub Hero reference into the live popup: a compact 400×563 header, crisp local SVG eye/copy input actions, icon measurement tiles, four-segment horizontal strength bar, HIBP row with chevron, expandable reason row, generator row, and masked favorites preview. It uses charcoal surfaces, slightly lighter cards, restrained blue actions, subtle borders, and a simpler inline panel without neon or glassmorphism. It retains the deeper local pattern analysis, specific improvement guidance, clearer HIBP network states with retry, customizable random-password and passphrase generation, organized vault search and sorting, encrypted-envelope import/export, and configurable vault auto-lock introduced in v1.8.0. The dark palette is a visual update only and does not change the security model. The implementation is deliberately small, dependency-free, and auditable. It uses a Manifest V3 service worker for network communication, a content script for inline page feedback, and an extension popup for manual analysis.
 
 The security boundary is explicit. Entropy is a mathematical estimate based on an assumed character pool; it is not a proof that a password is random. The breach result is a corpus lookup; a clean response does not prove that a password has never been exposed elsewhere. The UI uses this language so that users are not given false certainty.
 
@@ -15,7 +15,7 @@ The security boundary is explicit. Entropy is a mathematical estimate based on a
 
 ### 1.1 Product identity
 
-PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.8.7**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
+PassBit combines the words “password” and “bit” to communicate both credential protection and measurable information content. The release name is **PassBit — Zero-Knowledge Entropy & Breach Detector**, with version **v1.8.8**. The creator and author credit is **Firas**, described as a Cybersecurity Student and Web Security Researcher.
 
 The core value proposition is a zero-cost, privacy-first Chrome Extension that provides an immediate password-strength estimate, explainable local warnings, and a breach exposure signal directly inside the browser. The extension does not require an account, does not store passwords by default, and does not add analytics or telemetry; an explicitly saved favorite is stored only as authenticated ciphertext. The only outbound request is the privacy-preserving range request needed for the optional breach check.
 
@@ -33,7 +33,7 @@ The visual language is **Modern Utility / Functional Privacy** in a calm dark mo
 | Amber | Moderate estimate | Caution and improvement opportunity. |
 | Green | Strong estimate or clean query result | Positive signal, not a guarantee. |
 
-The logo treatment is a restrained flat `PB` mark in the popup header, while the supplied PNG icons remain available for the Chrome toolbar and manifest identity. The repository also includes `assets/passbit-logo.png` as the standalone brand mark and `assets/passbit-usage-mockup.png` as a clearly labeled documentation visual. The mark is intentionally simple and readable at small sizes rather than decorative.
+The logo treatment is a restrained flat `PB` mark in the popup header, while the supplied PNG icons remain available for the Chrome toolbar and manifest identity. The repository includes the refreshed brand through the transparent Chrome icon set in `icons/`, while `assets/passbit-usage-mockup.png` remains as a clearly labeled documentation visual. The oversized standalone logo file is intentionally not included. The mark is intentionally simple and readable at small sizes rather than decorative.
 
 ### 1.3 Product principles
 
@@ -131,7 +131,7 @@ The popup is a compact Arabic RTL security panel with a calm charcoal background
 
 | UI region | Behavior | Accessibility expectation |
 | --- | --- | --- |
-| Header | Shows PassBit, version 1.8.7, and a restrained flat PB mark. | Brand text remains available independently of the mark. |
+| Header | Shows PassBit, version 1.8.8, and a restrained flat PB mark. | Brand text remains available independently of the mark. |
 | Password input | Accepts a value locally and updates length, character diversity, score, advice, and breach status after each input event. | Visible label, autocomplete hint, focus ring, and password type by default. |
 | Show/HIDE control | Toggles visibility only while the popup remains open. | Button label and `aria-pressed` state change together. |
 | Live measurements | Shows actual Unicode length and the number of active character groups out of four. | The values are text, not color-only indicators. |

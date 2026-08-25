@@ -1,6 +1,6 @@
 # PassBit Design System
 
-**Version:** 1.8.7
+**Version:** 1.8.8
 **Direction:** Modern Utility / Functional Privacy
 **Primary language:** Arabic, RTL
 **Popup target:** 400×563px Chrome extension popup
@@ -37,7 +37,7 @@ Use the locally available Arabic system stack with `Cairo, Tahoma, Arial, sans-s
 
 ## Brand assets
 
-`assets/passbit-logo.png` is the standalone PassBit lock/P emblem for README and project branding. `assets/passbit-usage-mockup.png` is a documentation-only 16:9 visual showing the popup beside a generic demo login page; it must not be presented as a real account or a live browser capture.
+The PassBit lock/P emblem is packaged through the Chrome icon set in `icons/` and appears in the project cover without a separate oversized logo image. `assets/passbit-usage-mockup.png` is a documentation-only 16:9 visual showing the popup beside a generic demo login page; it must not be presented as a real account or a live browser capture.
 
 ## Core components
 
