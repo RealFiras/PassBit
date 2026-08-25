@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeVaultButton = document.getElementById("close-vault");
   const passwordInput = document.getElementById("password-input");
   const toggleButton = document.getElementById("toggle-password");
+  const copyInputButton = document.getElementById("copy-input");
+  const inputFeedback = document.getElementById("input-feedback");
   const lengthValue = document.getElementById("length-value");
   const typesValue = document.getElementById("types-value");
   const lengthLabel = document.getElementById("length-label");
@@ -62,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const importVaultButton = document.getElementById("import-vault");
   const importVaultFile = document.getElementById("import-vault-file");
   const transferFeedback = document.getElementById("transfer-feedback");
+  const previewVaultButtons = document.querySelectorAll("[data-open-vault]");
 
   let breachRequestId = 0;
   let breachTimer = 0;
@@ -110,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     breachValue.textContent = "لم يبدأ بعد";
     setRetryVisible(false);
     tipLine.textContent = "نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.";
+    inputFeedback.textContent = "";
     renderReasons([]);
     setSaveButtonEnabled(false);
   }
@@ -144,6 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     breachValue.textContent = "جارٍ الفحص…";
     setRetryVisible(false);
     tipLine.textContent = `نصيحة: ${result.primarySuggestionAr}`;
+    inputFeedback.textContent = "";
     renderReasons(result.findingsAr);
     setSaveButtonEnabled(true);
   }
@@ -513,7 +518,15 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleButton.setAttribute("aria-pressed", String(showPassword));
   });
   retryBreachButton.addEventListener("click", () => requestBreachCheck(currentPasswordForBreach, true));
+  copyInputButton.addEventListener("click", () => {
+    if (!passwordInput.value) {
+      inputFeedback.textContent = "اكتب كلمة المرور أولًا.";
+      return;
+    }
+    copyText(passwordInput.value, inputFeedback);
+  });
   openVaultButton.addEventListener("click", () => showView("vault"));
+  previewVaultButtons.forEach((button) => button.addEventListener("click", () => showView("vault")));
   closeVaultButton.addEventListener("click", () => showView("check"));
   generateButton.setAttribute("aria-expanded", "false");
   generateButton.addEventListener("click", () => {

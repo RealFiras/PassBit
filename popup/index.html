@@ -10,40 +10,42 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="brand-lockup">
-        <span class="brand-mark" aria-hidden="true">PB</span>
+        <img class="brand-mark" src="../icons/icon32.png" alt="PB">
         <div><h1>PassBit</h1><p>فحص كلمة المرور بوضوح</p></div>
       </div>
-      <button id="open-vault" class="vault-link" type="button" title="فتح المفضلة المشفّرة"><span class="vault-star" aria-hidden="true">☆</span><span>المفضلة</span></button>
+      <button id="open-vault" class="header-icon-button" type="button" title="فتح المفضلة المشفّرة" aria-label="فتح المفضلة المشفّرة">⚙</button>
     </header>
 
     <section id="check-view" class="view">
       <section class="input-card">
-        <div class="step-heading"><span class="step-number">1</span><div><h2>اكتب كلمة المرور</h2><p>ستُفحص داخل المتصفح.</p></div></div>
+        <div class="section-heading"><h2>فحص كلمة المرور</h2><p>تحليل محلي سريع وخصوصية واضحة.</p></div>
         <div class="input-wrap">
-          <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="اكتب أو الصق هنا…" aria-describedby="input-hint">
-          <button id="toggle-password" class="text-button" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button>
+          <button id="toggle-password" class="input-action" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false">◉</button>
+          <input id="password-input" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="اكتب كلمة المرور هنا" aria-describedby="input-hint">
+          <button id="copy-input" class="input-action" type="button" title="نسخ كلمة المرور" aria-label="نسخ كلمة المرور">▣</button>
         </div>
         <div id="input-hint" class="field-meta"><span id="length-label">0 حرف</span><span id="types-label">0 من 4 أنواع</span></div>
+        <p id="input-feedback" class="input-feedback" aria-live="polite"></p>
       </section>
 
       <section class="stats-grid" aria-label="قياسات كلمة المرور">
-        <div class="stat-card"><span>الطول الفعلي</span><strong id="length-value">0</strong><small>حرف</small></div>
-        <div class="stat-card"><span>تنوّع الأحرف</span><strong id="types-value">0</strong><small>من 4 أنواع</small></div>
+        <div class="stat-card"><span>الطول</span><strong id="length-value">0</strong><small>حرف</small></div>
+        <div class="stat-card"><span>أنواع الأحرف</span><strong id="types-value">0/4</strong><small>أنواع</small></div>
       </section>
 
       <section id="result-card" class="result-card neutral" aria-live="polite">
-        <div class="step-number result-step">2</div>
-        <div id="score-ring" class="score-ring" style="--score: 0deg"><div class="score-inner"><strong id="score-value">0</strong><small>/100</small></div></div>
-        <div class="result-copy"><span class="eyebrow">التقييم المحسوب</span><h2 id="result-title">بانتظار كلمة المرور</h2><p id="result-description">يظهر التقييم بعد الكتابة.</p><small id="score-meta" class="score-meta">تقدير محلي محسّن</small></div>
+        <div class="result-header"><h2>قوة كلمة المرور</h2><strong id="result-title">بانتظار الفحص</strong></div>
+        <div id="score-ring" class="score-ring" style="--score: 0deg; --score-percent: 0%"><div class="score-inner"><strong id="score-value">0</strong><small>/100</small></div></div>
+        <p id="result-description">سنحسب القوة بناءً على الطول والتنوع.</p>
+        <small id="score-meta" class="score-meta">تقدير محلي محسّن</small>
       </section>
 
       <section class="breach-row" aria-live="polite">
+        <div class="breach-copy"><strong>HIBP <span>(حالة التسريب)</span></strong><span id="breach-value">لم يبدأ بعد</span></div>
         <div id="breach-icon" class="breach-icon">◇</div>
-        <div class="breach-copy"><span class="eyebrow">3. فحص التسريب</span><strong id="breach-value">لم يبدأ بعد</strong></div>
         <button id="retry-breach" class="small-button retry-button" type="button" hidden>إعادة الفحص</button>
       </section>
 
-      <p id="tip-line" class="tip-line">نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.</p>
       <details class="check-details">
         <summary>لماذا ظهرت هذه النتيجة؟</summary>
         <ul id="reason-list"><li>اكتب كلمة المرور لعرض الفحوصات.</li></ul>
@@ -51,7 +53,7 @@
       </details>
 
       <section class="generator-section">
-        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true">✦</span><span><strong>توليد كلمة مرور قوية</strong><small>اختر كلمة عشوائية أو عبارة مرور طويلة</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
+        <button id="generate-password" class="generator-trigger" type="button" aria-expanded="false" aria-controls="generator-panel"><span class="generator-trigger-icon" aria-hidden="true">⌁</span><span><strong>مولّد</strong><small>كلمة عشوائية أو عبارة مرور</small></span><span class="generator-chevron" aria-hidden="true">⌄</span></button>
         <section id="generator-panel" class="generator-panel" hidden aria-label="مولّد كلمات المرور">
           <div class="generator-heading"><div><h3>المولد المحلي</h3><p>لا يتم إرسال الناتج. عدّل الخيارات ثم ولّد قيمة جديدة.</p></div><button id="regenerate-generated" class="secondary-button" type="button" title="إنشاء قيمة مختلفة">توليد</button></div>
           <div class="generator-modes" role="tablist" aria-label="نوع المولد">
@@ -76,6 +78,11 @@
           <button id="use-generated" class="primary-button full-button" type="button" disabled>استخدمها للفحص</button>
           <p id="copy-feedback" class="feedback" aria-live="polite"></p>
         </section>
+      </section>
+
+      <section class="favorites-preview" aria-label="المفضلة المشفّرة">
+        <div class="preview-heading"><h2>المفضلة</h2><span class="preview-plus" aria-hidden="true">＋</span></div>
+        <button class="preview-vault-row" type="button" aria-label="فتح المفضلة المشفّرة" data-open-vault><span class="preview-vault-icon" aria-hidden="true">◉</span><span><strong>المفضلة المشفّرة</strong><small>افتح الخزنة المحلية</small></span><span class="preview-arrow" aria-hidden="true">‹</span></button>
       </section>
 
       <p class="privacy-note">التحليل محلي · لا تُرسل كلمة المرور كاملة</p>
