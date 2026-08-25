@@ -1,5 +1,7 @@
 # PassBit
 
+![PassBit GitHub hero](assets/passbit-github-hero.png)
+
 **PassBit — Zero-Knowledge Entropy & Breach Detector** is a Manifest V3 Chrome extension created by **Firas**. Version 1.8.2 adds a calm dark Arabic interface based on the PassBit Stitch design system, deeper local pattern analysis, a cryptographically random customizable password/passphrase generator, actionable improvement suggestions, clearer HIBP retry states, a double-click quick-scan chip beside password fields, a restrained PB brand mark, and an opt-in encrypted local favorites vault with search and transfer controls. It combines a local password-entropy estimate with a privacy-preserving Pwned Passwords range query. The extension is intentionally dependency-free: there is no build step, no account, and no telemetry. Passwords are not stored unless the user explicitly saves one in the encrypted favorites vault.
 
 > PassBit is a defensive decision aid. A clean breach response does not prove that a password is safe, and entropy is an estimate rather than a guarantee.
