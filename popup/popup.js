@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const typesLabel = document.getElementById("types-label");
   const resultCard = document.getElementById("result-card");
   const scoreRing = document.getElementById("score-ring");
+  const scoreSegments = scoreRing.querySelectorAll(".score-segment");
   const scoreValue = document.getElementById("score-value");
   const scoreMeta = document.getElementById("score-meta");
   const resultTitle = document.getElementById("result-title");
@@ -89,11 +90,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (retryBreachButton) retryBreachButton.hidden = !visible;
   }
 
+  function setBreachIcon(state = "neutral") {
+    const icons = {
+      neutral: '<svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v5m0 3h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+      clean: '<svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m8.4 12.2 2.3 2.3 4.9-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      leaked: '<svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 4 20 19H4L12 4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9v5m0 2.5h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    };
+    const iconState = icons[state] ? state : "neutral";
+    breachIcon.className = `breach-icon ${iconState === "neutral" ? "" : iconState}`.trim();
+    breachIcon.innerHTML = icons[iconState];
+  }
+
   function updateScore(value) {
     const score = Math.max(0, Math.min(100, Number(value) || 0));
     scoreValue.textContent = String(score);
     scoreRing.style.setProperty("--score", `${score * 3.6}deg`);
     scoreRing.style.setProperty("--score-percent", `${score}%`);
+    const thresholds = [25, 50, 75, 100];
+    scoreSegments.forEach((segment, index) => segment.classList.toggle("active", score >= thresholds[index]));
   }
 
   function renderEmpty() {
@@ -101,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentPasswordForBreach = "";
     window.clearTimeout(breachTimer);
     lengthValue.textContent = "0";
-    typesValue.textContent = "0";
+    typesValue.textContent = "0/4";
     lengthLabel.textContent = "0 حرف";
     typesLabel.textContent = "0 من 4 أنواع";
     updateScore(0);
@@ -109,8 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultTitle.textContent = "بانتظار كلمة المرور";
     resultDescription.textContent = "سنحسب القوة بناءً على الطول والتنوع.";
     scoreMeta.textContent = "تقدير محلي محسّن";
-    breachIcon.className = "breach-icon";
-    breachIcon.textContent = "◇";
+    setBreachIcon("neutral");
     breachValue.textContent = "لم يبدأ بعد";
     setRetryVisible(false);
     tipLine.textContent = "نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.";
@@ -134,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const types = Object.values(result.characterSets).filter(Boolean).length;
     currentBand = result.band.id;
     lengthValue.textContent = String(result.length);
-    typesValue.textContent = String(types);
+    typesValue.textContent = `${types}/4`;
     lengthLabel.textContent = `${result.length} حرف`;
     typesLabel.textContent = `${types} من 4 أنواع`;
     updateScore(result.progressPercent);
@@ -144,8 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     scoreMeta.textContent = result.patternPenaltyBits > 0
       ? `تقدير محسّن · خُصم ${result.patternPenaltyBits} بت بسبب أنماط واضحة`
       : "تقدير محلي محسّن · لا توجد خصومات نمطية";
-    breachIcon.className = "breach-icon";
-    breachIcon.textContent = "◇";
+    setBreachIcon("neutral");
     breachValue.textContent = "جارٍ الفحص…";
     setRetryVisible(false);
     tipLine.textContent = `نصيحة: ${result.primarySuggestionAr}`;
@@ -168,8 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderBreachError(status = "network_error") {
-    breachIcon.className = "breach-icon";
-    breachIcon.textContent = "◇";
+    setBreachIcon("neutral");
     breachValue.textContent = breachErrorMessage(status);
     setRetryVisible(status !== "invalid_input");
     setClasses(resultCard, "result-card", "error");
@@ -180,8 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderBreachResult(result) {
     setRetryVisible(false);
     if (result.status === "leaked") {
-      breachIcon.className = "breach-icon leaked";
-      breachIcon.textContent = "!";
+      setBreachIcon("leaked");
       breachValue.textContent = `ظهرت ${result.count.toLocaleString("ar-EG")} مرة`;
       setClasses(resultCard, "result-card", "leaked");
       resultTitle.textContent = "لا تستخدمها — ظهرت في تسريب";
@@ -189,8 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     if (result.status === "clean") {
-      breachIcon.className = "breach-icon clean";
-      breachIcon.textContent = "✓";
+      setBreachIcon("clean");
       breachValue.textContent = "لم تظهر في التسريبات المعروفة";
       setClasses(resultCard, "result-card", currentBand);
       resultTitle.textContent = currentBand === "strong" ? "قوية ولم تظهر في التسريبات" : `القوة ${currentBand === "moderate" ? "متوسطة" : "ضعيفة"}`;

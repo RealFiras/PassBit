@@ -19,6 +19,7 @@
     </header>
 
     <section id="check-view" class="view">
+      <div class="scroll-content">
       <section class="input-card">
         <div class="section-heading"><h2>فحص كلمة المرور</h2></div>
         <div class="input-wrap">
@@ -41,7 +42,7 @@
 
       <section id="result-card" class="result-card neutral" aria-live="polite">
         <div class="result-header"><h2>قوة كلمة المرور</h2><strong id="result-title">بانتظار الفحص</strong></div>
-        <div id="score-ring" class="score-ring" style="--score: 0deg; --score-percent: 0%"><div class="score-inner sr-only"><strong id="score-value">0</strong><small>/100</small></div></div>
+        <div id="score-ring" class="score-ring" style="--score: 0deg; --score-percent: 0%"><span class="score-segment" aria-hidden="true"></span><span class="score-segment" aria-hidden="true"></span><span class="score-segment" aria-hidden="true"></span><span class="score-segment" aria-hidden="true"></span><div class="score-inner sr-only"><strong id="score-value">0</strong><small>/100</small></div></div>
         <p id="result-description" class="sr-only">سنحسب القوة بناءً على الطول والتنوع.</p>
         <small id="score-meta" class="score-meta sr-only">تقدير محلي محسّن</small>
       </section>
@@ -100,6 +101,7 @@
 
       <p id="tip-line" class="sr-only" aria-live="polite">نصيحة: استخدم 14 حرفًا أو أكثر، واجعلها فريدة.</p>
       <p class="privacy-note">التحليل محلي · لا تُرسل كلمة المرور كاملة</p>
+      </div>
     </section>
 
     <section id="vault-view" class="view" hidden>
